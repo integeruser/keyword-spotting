@@ -1,0 +1,16 @@
+{
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": "."
+		}
+	],
+    "build_systems":
+    [
+        {
+            "name": "document-analysis",
+            "shell_cmd": "python main.py img/onelinecorpus.png 0.2 15"
+        }
+    ]
+}
