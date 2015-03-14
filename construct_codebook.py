@@ -76,6 +76,8 @@ for group in range(k):
 
         curr_page_start_index = curr_page_last_index
     codebook.append(Codeword(centroid, features))
+assert(sum([len(codeword.features)
+            for codeword in codebook]) == len(corpus_keypoints_vstack))
 
 # save codebook for later use
 print 'Saving codebook...'
