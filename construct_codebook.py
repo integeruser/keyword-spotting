@@ -44,20 +44,20 @@ epsilon = 1.0
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER,
             max_iter, epsilon)
 attempts = 10
-compactness, labels, centers = cv2.kmeans(corpus_descriptors_vstack, k,
-                                          criteria, attempts,
-                                          cv2.KMEANS_RANDOM_CENTERS)
+compactness, labels, d = cv2.kmeans(corpus_descriptors_vstack, k,
+                                    criteria, attempts,
+                                    cv2.KMEANS_RANDOM_CENTERS)
 # compactness: the sum of squared distance from each point to their
 #              corresponding centers
 # labels: the label array where each element marked '0', '1', ...
-# centers: the array of centers of clusters
+# d: the array of centers of clusters
 
 # construct the codebook of k visual words
 print 'Constructing codebook...'
 codebook = list()
 
 for group in range(k):
-    centroid = centers[group]
+    centroid = d[group]
 
     # iterate corpus keypoints per page
     features = list()
