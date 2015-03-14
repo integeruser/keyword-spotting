@@ -19,7 +19,7 @@ print '   {0: >21} = {1}'.format('contrast_threshold', contrast_threshold)
 
 # load the each page of the corpus as grey scale, detect its keypoints and
 # compute its descriptors
-print 'Loading corpus from ' + corpus_directory_path + '...'
+print 'Loading corpus from {0}...'.format(corpus_directory_path)
 
 sift = cv2.SIFT(contrastThreshold=contrast_threshold)
 corpus_keypoints = list()
