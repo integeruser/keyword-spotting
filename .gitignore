@@ -1,4 +1,6 @@
 *.pyc
 *.sublime-workspace
+*.npy
+pages
 test.py
 
