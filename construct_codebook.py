@@ -78,5 +78,5 @@ assert(sum([len(codeword['features']) for codeword in codebook]) == len(corpus_k
 
 # save codebook for later use
 print 'Saving codebook...'
-with open('codebook' + str(k), 'wb') as f:
+with open('codebook-' + str(k), 'wb') as f:
     pickle.dump(codebook, f, protocol=pickle.HIGHEST_PROTOCOL)
