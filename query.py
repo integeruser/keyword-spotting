@@ -6,16 +6,14 @@ import pickle
 import sys
 
 
-if len(sys.argv) != 4:
-    sys.exit('Usage: {0} query_file_path codebook_file_path contrast_threshold'.format(sys.argv[0]))
+if len(sys.argv) != 3:
+    sys.exit('Usage: {0} query_file_path codebook_file_path'.format(sys.argv[0]))
 
 query_file_path = sys.argv[1]
 codebook_file_path = sys.argv[2]
-contrast_threshold = float(sys.argv[3])
 print 'Starting script...'
 print '   {0: <18} = {1}'.format('query_file_path', query_file_path)
 print '   {0: <18} = {1}'.format('codebook_file_path', codebook_file_path)
-print '   {0: <18} = {1}'.format('contrast_threshold', contrast_threshold)
 
 ################################################################################
 
@@ -23,7 +21,7 @@ print '   {0: <18} = {1}'.format('contrast_threshold', contrast_threshold)
 print 'Detecting keypoints and computing descriptors on \'{0}\'...'.format(query_file_path)
 query = cv2.imread(query_file_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
 
-sift = cv2.SIFT(contrastThreshold=contrast_threshold)
+sift = cv2.SIFT()
 query_keypoints, query_descriptors = sift.detectAndCompute(query, None)
 # query_keypoints: the input/output vector of keypoints
 # query_descriptors: the output matrix of descriptors
