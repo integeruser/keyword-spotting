@@ -52,20 +52,17 @@ for group in range(k):
     centroid = d[group]
 
     # find which keypoints belong to the current group
-    features = list()
+    features = dict.fromkeys(corpus['pages'], list())
     curr_page_start_index = 0
     curr_page_last_index = 0
-    for page in range(len(corpus['pages'])):
-        curr_page_last_index = curr_page_start_index + \
-            len(corpus['keypoints'][page])
+    for i, page in enumerate(corpus['pages']):
+        curr_page_last_index = curr_page_start_index + len(corpus['keypoints'][i])
 
         curr_page_keypoints = corpus_keypoints_vstack[
             curr_page_start_index:curr_page_last_index]
         curr_page_curr_group_keypoints = curr_page_keypoints[
             labels.ravel()[curr_page_start_index:curr_page_last_index] == group]
-        for keypoint in curr_page_curr_group_keypoints:
-            feature = {'p': page, 'x': keypoint}
-            features.append(feature)
+        features[page] = curr_page_curr_group_keypoints
 
         curr_page_start_index = curr_page_last_index
 
@@ -73,7 +70,8 @@ for group in range(k):
     codebook.append(codeword)
 
 assert(len(codebook) == k)
-assert(sum([len(codeword['features']) for codeword in codebook]) == len(corpus_keypoints_vstack))
+assert(sum([len(v) for codeword in codebook for v in codeword['features'].values()])
+       == len(corpus_keypoints_vstack))
 
 
 # save codebook for later use
