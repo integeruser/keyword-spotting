@@ -2,6 +2,10 @@
 	"folders":
 	[
 		{
+            "file_exclude_patterns": [
+                ".gitignore",
+                "document-analysis.sublime-project",
+            ],
 			"follow_symlinks": true,
 			"path": "."
 		}
