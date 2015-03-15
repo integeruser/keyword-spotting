@@ -7,13 +7,13 @@ import sys
 
 
 if len(sys.argv) != 3:
-    sys.exit('Usage: {0} corpus_file_path k'.format(sys.argv[0]))
+    sys.exit('Usage: {0} corpus_file_path cbs'.format(sys.argv[0]))
 
 corpus_file_path = sys.argv[1]
-k = int(sys.argv[2])
+cbs = int(sys.argv[2])
 print 'Starting script...'
 print '   {0: <16} = {1}'.format('corpus_file_path', corpus_file_path)
-print '   {0: <16} = {1}'.format('k', k)
+print '   {0: <16} = {1}'.format('cbs', cbs)
 
 ################################################################################
 
@@ -34,10 +34,10 @@ corpus_descriptors_vstack = numpy.vstack(corpus['descriptors'])
 
 max_iter = 10
 epsilon = 1.0
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
+criteria = (cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
 attempts = 10
 compactness, labels, d = cv2.kmeans(
-    corpus_descriptors_vstack, k, criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)
+    corpus_descriptors_vstack, cbs, criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)
 # compactness: the sum of squared distance from each point to their corresponding centers
 # labels: the label array where each element marked '0', '1', ...
 # d: the array of centers of clusters
@@ -48,7 +48,7 @@ print 'Constructing codebook...'
 codebook = list()
 
 # create a codeword for each k-means group found
-for group in range(k):
+for group in range(cbs):
     centroid = d[group]
 
     # find which keypoints belong to the current group
@@ -69,12 +69,12 @@ for group in range(k):
     codeword = {'d': centroid, 'features': features}
     codebook.append(codeword)
 
-assert(len(codebook) == k)
+assert(len(codebook) == cbs)
 assert(sum([len(v) for codeword in codebook for v in codeword['features'].values()])
        == len(corpus_keypoints_vstack))
 
 
 # save codebook for later use
 print 'Saving codebook...'
-with open('codebook-' + str(k), 'wb') as f:
+with open('codebook-' + str(cbs), 'wb') as f:
     pickle.dump(codebook, f, protocol=pickle.HIGHEST_PROTOCOL)
