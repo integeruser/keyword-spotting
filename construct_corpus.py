@@ -39,5 +39,6 @@ for page_file_path in os.listdir(pages_directory_path):
 
 # save pages, keypoints and descriptors for later use
 print 'Saving corpus...'
-with open('corpus-' + str(contrast_threshold), 'wb') as f:
+corpus_file_name = 'corpus-{0}'.format(contrast_threshold)
+with open(corpus_file_name, 'wb') as f:
     pickle.dump(corpus, f, protocol=pickle.HIGHEST_PROTOCOL)
