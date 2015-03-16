@@ -6,14 +6,16 @@ import pickle
 import sys
 
 
-if len(sys.argv) != 3:
-    sys.exit('Usage: {0} corpus_file_path cbs'.format(sys.argv[0]))
+if len(sys.argv) != 4:
+    sys.exit('Usage: {0} corpus_file_path cbs max_iter'.format(sys.argv[0]))
 
 corpus_file_path = sys.argv[1]
 cbs = int(sys.argv[2])
+max_iter = int(sys.argv[3])
 print 'Starting script...'
 print '   {0: <16} = {1}'.format('corpus_file_path', corpus_file_path)
 print '   {0: <16} = {1}'.format('cbs', cbs)
+print '   {0: <16} = {1}'.format('max_iter', max_iter)
 
 ################################################################################
 
@@ -29,10 +31,8 @@ for page_keypoints, page_descriptors in itertools.izip(corpus['keypoints'], corp
 
 # run k-means on the descriptors space
 print 'Running k-means on the descriptors space...'
-corpus_keypoints_vstack = numpy.vstack(corpus['keypoints'])
 corpus_descriptors_vstack = numpy.vstack(corpus['descriptors'])
 
-max_iter = 10
 epsilon = 1.0
 criteria = (cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
 attempts = 10
@@ -45,8 +45,9 @@ compactness, labels, d = cv2.kmeans(
 
 # construct the codebook of k visual words
 print 'Constructing codebook...'
-codebook = list()
+corpus_keypoints_vstack = numpy.vstack(corpus['keypoints'])
 
+codebook = list()
 # create a codeword for each k-means group found
 for group in range(cbs):
     centroid = d[group]
