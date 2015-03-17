@@ -28,8 +28,6 @@ for page_file_path in os.listdir(pages_directory_path):
     page = cv2.imread(pages_directory_path + '/' + page_file_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
 
     page_keypoints, page_descriptors = sift.detectAndCompute(page, None)
-    # page_keypoints: the input/output vector of keypoints
-    # page_descriptors: the output matrix of descriptors
     page_keypoints = numpy.asarray([keypoint.pt for keypoint in page_keypoints])
 
     corpus['pages'].append(page_file_path)
