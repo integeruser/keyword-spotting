@@ -77,6 +77,7 @@ assert(sum([len(v) for codeword in codebook for v in codeword['features'].values
 
 # save codebook for later use
 print 'Saving codebook...'
-codebook_file_name = 'codebook-{0}-{1}'.format(codebook_size, max_iter)
+contrast_threshold = corpus_file_path[corpus_file_path.rfind('.') - 1:]
+codebook_file_name = 'codebook-{0}-{1}-{2}'.format(contrast_threshold, codebook_size, max_iter)
 with open(codebook_file_name, 'wb') as f:
     pickle.dump(codebook, f, protocol=pickle.HIGHEST_PROTOCOL)
