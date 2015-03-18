@@ -17,17 +17,17 @@ print '   {0: <20} = {1}'.format('contrast_threshold', contrast_threshold)
 
 ################################################################################
 
-# load the each page of the corpus as grey scale, detect its keypoints and
-# compute its descriptors
+# load the each page of the corpus as grey scale, detect its keypoints and compute its descriptors
 print 'Loading pages...'
 corpus = {'pages': list(), 'keypoints': list(), 'descriptors': list()}
 
 sift = cv2.SIFT(contrastThreshold=contrast_threshold)
 for page_file_path in os.listdir(pages_directory_path):
     print '   Detecting keypoints and computing descriptors on \'{0}\'...'.format(page_file_path)
-    page = cv2.imread(pages_directory_path + '/' + page_file_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+    page_image = cv2.imread(
+        pages_directory_path + '/' + page_file_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
 
-    page_keypoints, page_descriptors = sift.detectAndCompute(page, None)
+    page_keypoints, page_descriptors = sift.detectAndCompute(page_image, None)
     page_keypoints = numpy.asarray([keypoint.pt for keypoint in page_keypoints])
 
     corpus['pages'].append(page_file_path)
