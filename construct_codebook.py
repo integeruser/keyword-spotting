@@ -67,7 +67,10 @@ for group in range(codebook_size):
 
         curr_page_start_index = curr_page_last_index
 
-    codeword = {'d': centroid, 'features': features}
+    codeword = {
+        'd': centroid,
+        'features': features
+    }
     codebook.append(codeword)
 
 assert(len(codebook) == codebook_size)
