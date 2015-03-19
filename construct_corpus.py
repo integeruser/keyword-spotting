@@ -8,14 +8,14 @@ import sys
 
 if len(sys.argv) != 4:
     sys.exit(
-        'Usage: {0} pages_directory_path contrast_threshold n_octave_layers'.format(sys.argv[0]))
+        'Usage: {0} base_path contrast_threshold n_octave_layers'.format(sys.argv[0]))
 
-pages_directory_path = sys.argv[1]
+base_path = sys.argv[1]
 contrast_threshold = float(sys.argv[2])
 n_octave_layers = int(sys.argv[3])
 print 'Starting script...'
-print '   {0: <20} = {1}'.format('pages_directory_path', pages_directory_path)
-print '   {0: <20} = {1}'.format('contrast_threshold', contrast_threshold)
+print '   {0: <20} = {1}'.format('base_path', base_path)
+print '   {0: <18} = {1}'.format('contrast_threshold', contrast_threshold)
 print '   {0: <20} = {1}'.format('n_octave_layers', n_octave_layers)
 
 ################################################################################
@@ -30,10 +30,11 @@ corpus = {
 
 sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
 
-for page_file_path in os.listdir(pages_directory_path):
-    print '   Detecting keypoints and computing descriptors on \'{0}\'...'.format(page_file_path)
+pages_directory_path = base_path + '/pages/'
+for page_file_name in os.listdir(pages_directory_path):
+    print '   Detecting keypoints and computing descriptors on \'{0}\'...'.format(page_file_name)
     page_image = cv2.imread(
-        pages_directory_path + '/' + page_file_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+        pages_directory_path + '/' + page_file_name, cv2.CV_LOAD_IMAGE_GRAYSCALE)
 
     page_keypoints, page_descriptors = sift.detectAndCompute(page_image, None)
 
@@ -45,7 +46,7 @@ for page_file_path in os.listdir(pages_directory_path):
                                  keypoint.octave, keypoint.class_id)
         page_keypoints_serializable.append(keypoint_serializable)
 
-    corpus['pages'].append(page_file_path)
+    corpus['pages'].append(page_file_name)
     corpus['keypoints'].append(page_keypoints_serializable)
     corpus['descriptors'].append(page_descriptors)
 
