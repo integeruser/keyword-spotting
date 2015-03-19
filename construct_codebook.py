@@ -1,8 +1,8 @@
 #!/usr/bin/env python -u
+import cPickle
 import cv2
 import itertools
 import numpy
-import cPickle
 import re
 import sys
 
