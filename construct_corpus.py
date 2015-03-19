@@ -36,10 +36,17 @@ for page_file_path in os.listdir(pages_directory_path):
         pages_directory_path + '/' + page_file_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
 
     page_keypoints, page_descriptors = sift.detectAndCompute(page_image, None)
-    page_keypoints = numpy.asarray([keypoint.pt for keypoint in page_keypoints])
+
+    # we can't serialize directly cv2.KeyPoint, so we create a tuple that resemble it
+    page_keypoints_serializable = list()
+    for keypoint in page_keypoints:
+        keypoint_serializable = (
+            keypoint.pt, keypoint.size, keypoint.angle,
+            keypoint.response, keypoint.octave, keypoint.class_id)
+        page_keypoints_serializable.append(keypoint_serializable)
 
     corpus['pages'].append(page_file_path)
-    corpus['keypoints'].append(page_keypoints)
+    corpus['keypoints'].append(page_keypoints_serializable)
     corpus['descriptors'].append(page_descriptors)
 
 
