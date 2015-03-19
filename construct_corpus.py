@@ -6,14 +6,17 @@ import pickle
 import sys
 
 
-if len(sys.argv) != 3:
-    sys.exit('Usage: {0} pages_directory_path contrast_threshold'.format(sys.argv[0]))
+if len(sys.argv) != 4:
+    sys.exit(
+        'Usage: {0} pages_directory_path contrast_threshold n_octave_layers'.format(sys.argv[0]))
 
 pages_directory_path = sys.argv[1]
 contrast_threshold = float(sys.argv[2])
+n_octave_layers = int(sys.argv[3])
 print 'Starting script...'
 print '   {0: <20} = {1}'.format('pages_directory_path', pages_directory_path)
 print '   {0: <20} = {1}'.format('contrast_threshold', contrast_threshold)
+print '   {0: <20} = {1}'.format('n_octave_layers', n_octave_layers)
 
 ################################################################################
 
@@ -21,7 +24,8 @@ print '   {0: <20} = {1}'.format('contrast_threshold', contrast_threshold)
 print 'Loading pages...'
 corpus = {'pages': list(), 'keypoints': list(), 'descriptors': list()}
 
-sift = cv2.SIFT(contrastThreshold=contrast_threshold)
+sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
+
 for page_file_path in os.listdir(pages_directory_path):
     print '   Detecting keypoints and computing descriptors on \'{0}\'...'.format(page_file_path)
     page_image = cv2.imread(
