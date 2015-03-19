@@ -2,7 +2,7 @@
 import cv2
 import itertools
 import numpy
-import pickle
+import cPickle
 import sys
 
 
@@ -22,7 +22,19 @@ print '   {0: <16} = {1}'.format('max_iter', max_iter)
 # load precomputed keypoints and descriptors
 print 'Loading corpus...'
 with open(corpus_file_path, 'rb') as f:
-    corpus = pickle.load(f)
+    corpus = cPickle.load(f)
+
+# convert back the serialized keypoints to a KeyPoint instance
+keypoints = list()
+for page_keypoints in corpus['keypoints']:
+    keypoints_unserialized = list()
+    for keypoint in page_keypoints:
+        keypoint_unserialized = cv2.KeyPoint(x=keypoint[0][0], y=keypoint[0][1], _size=keypoint[1],
+                                             _angle=keypoint[2], _response=keypoint[3],
+                                             _octave=keypoint[4], _class_id=keypoint[5])
+        keypoints_unserialized.append(keypoint_unserialized)
+    keypoints.append(keypoints_unserialized)
+corpus['keypoints'] = keypoints
 
 assert(len(corpus['pages']) == len(corpus['keypoints']) == len(corpus['descriptors']))
 for page_keypoints, page_descriptors in itertools.izip(corpus['keypoints'], corpus['descriptors']):
@@ -34,6 +46,7 @@ print 'Running k-means on the descriptors space...'
 corpus_descriptors_vstack = numpy.vstack(corpus['descriptors'])
 
 epsilon = 1.0
+# criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
 criteria = (cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
 attempts = 10
 compactness, labels, d = cv2.kmeans(
@@ -45,7 +58,9 @@ compactness, labels, d = cv2.kmeans(
 
 # construct the codebook of k visual words
 print 'Constructing codebook...'
-corpus_keypoints_vstack = numpy.vstack(corpus['keypoints'])
+corpus_keypoints_pt = [keypoint.pt for page_keypoints in corpus['keypoints']
+                       for keypoint in page_keypoints]
+corpus_keypoints_pt_vstack = numpy.vstack(corpus_keypoints_pt)
 
 codebook = list()
 # create a codeword for each k-means group found
@@ -59,7 +74,7 @@ for group in range(codebook_size):
     for i, page in enumerate(corpus['pages']):
         curr_page_last_index = curr_page_start_index + len(corpus['keypoints'][i])
 
-        curr_page_keypoints = corpus_keypoints_vstack[
+        curr_page_keypoints = corpus_keypoints_pt_vstack[
             curr_page_start_index:curr_page_last_index]
         curr_page_curr_group_keypoints = curr_page_keypoints[
             labels.ravel()[curr_page_start_index:curr_page_last_index] == group]
@@ -75,7 +90,7 @@ for group in range(codebook_size):
 
 assert(len(codebook) == codebook_size)
 assert(sum([len(v) for codeword in codebook for v in codeword['features'].values()])
-       == len(corpus_keypoints_vstack))
+       == len(corpus_keypoints_pt_vstack))
 
 
 # save codebook for later use
@@ -83,4 +98,4 @@ print 'Saving codebook...'
 contrast_threshold = corpus_file_path[corpus_file_path.rfind('.') - 1:]
 codebook_file_name = 'codebook-{0}-{1}-{2}'.format(contrast_threshold, codebook_size, max_iter)
 with open(codebook_file_name, 'wb') as f:
-    pickle.dump(codebook, f, protocol=pickle.HIGHEST_PROTOCOL)
+    cPickle.dump(codebook, f, protocol=cPickle.HIGHEST_PROTOCOL)
