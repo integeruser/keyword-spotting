@@ -2,7 +2,7 @@
 import cv2
 import numpy
 import os
-import pickle
+import cPickle
 import sys
 
 
@@ -47,4 +47,4 @@ for page_file_path in os.listdir(pages_directory_path):
 print 'Saving corpus...'
 corpus_file_name = 'corpus-{0}-{1}'.format(len(corpus['pages']), contrast_threshold)
 with open(corpus_file_name, 'wb') as f:
-    pickle.dump(corpus, f, protocol=pickle.HIGHEST_PROTOCOL)
+    cPickle.dump(corpus, f, protocol=cPickle.HIGHEST_PROTOCOL)
