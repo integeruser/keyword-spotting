@@ -8,14 +8,14 @@ import sys
 
 if len(sys.argv) != 4:
     sys.exit(
-        'Usage: {0} base_path contrast_threshold n_octave_layers'.format(sys.argv[0]))
+        'Usage: {0} pages_directory_path contrast_threshold n_octave_layers'.format(sys.argv[0]))
 
-base_path = sys.argv[1]
+pages_directory_path = sys.argv[1]
 contrast_threshold = float(sys.argv[2])
 n_octave_layers = int(sys.argv[3])
 print 'Starting script...'
-print '   {0: <20} = {1}'.format('base_path', base_path)
-print '   {0: <18} = {1}'.format('contrast_threshold', contrast_threshold)
+print '   {0: <20} = {1}'.format('pages_directory_path', pages_directory_path)
+print '   {0: <20} = {1}'.format('contrast_threshold', contrast_threshold)
 print '   {0: <20} = {1}'.format('n_octave_layers', n_octave_layers)
 
 ################################################################################
@@ -30,7 +30,6 @@ corpus = {
 
 sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
 
-pages_directory_path = base_path + '/pages/'
 for page_file_name in os.listdir(pages_directory_path):
     print '   Detecting keypoints and computing descriptors on \'{0}\'...'.format(page_file_name)
     page_image = cv2.imread(
