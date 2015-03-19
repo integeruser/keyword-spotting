@@ -40,9 +40,9 @@ for page_file_path in os.listdir(pages_directory_path):
     # we can't serialize directly cv2.KeyPoint, so we create a tuple that resemble it
     page_keypoints_serializable = list()
     for keypoint in page_keypoints:
-        keypoint_serializable = (
-            keypoint.pt, keypoint.size, keypoint.angle,
-            keypoint.response, keypoint.octave, keypoint.class_id)
+        keypoint_serializable = (keypoint.pt, keypoint.size,
+                                 keypoint.angle, keypoint.response,
+                                 keypoint.octave, keypoint.class_id)
         page_keypoints_serializable.append(keypoint_serializable)
 
     corpus['pages'].append(page_file_path)
