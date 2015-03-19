@@ -3,6 +3,7 @@ import cv2
 import itertools
 import numpy
 import cPickle
+import re
 import sys
 
 
@@ -95,7 +96,7 @@ assert(sum([len(v) for codeword in codebook for v in codeword['features'].values
 
 # save codebook for later use
 print 'Saving codebook...'
-contrast_threshold = corpus_file_path[corpus_file_path.rfind('.') - 1:]
+contrast_threshold = re.findall(r'corpus-.*-([^(]*)-.*', corpus_file_path)[0]
 codebook_file_name = 'codebook-{0}-{1}-{2}'.format(contrast_threshold, codebook_size, max_iter)
 with open(codebook_file_name, 'wb') as f:
     cPickle.dump(codebook, f, protocol=cPickle.HIGHEST_PROTOCOL)
