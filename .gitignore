@@ -1,3 +1,9 @@
-*.sublime-workspace
-codebook*
-corpus*
+keyword-spotting.*
+.idea/*
+boxes/*
+codebooks/*
+corpus/*
+documents/*
+pages/*
+queries/*
+*.pyc
