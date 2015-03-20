@@ -3,6 +3,7 @@ import cPickle
 import cv2
 import os
 import sys
+import utils
 
 
 if len(sys.argv) != 4:
@@ -21,31 +22,21 @@ print '   {0: <20} = {1}'.format('n_octave_layers', n_octave_layers)
 
 # load the each page of the corpus as grey scale, detect its keypoints and compute its descriptors
 print 'Loading pages...'
-corpus = {
-    'pages': list(),
-    'keypoints': list(),
-    'descriptors': list()
-}
+corpus = {'pages': list(), 'keypoints': list(), 'descriptors': list()}
 
 sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
 
 for page_file_name in os.listdir(pages_directory_path):
     print '   Detecting keypoints and computing descriptors on \'{0}\'...'.format(page_file_name)
     page_image = cv2.imread(
-        pages_directory_path + '/' + page_file_name, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+        '{0}/{1}'.format(pages_directory_path, page_file_name), cv2.CV_LOAD_IMAGE_GRAYSCALE)
 
     page_keypoints, page_descriptors = sift.detectAndCompute(page_image, None)
 
-    # we can't serialize directly cv2.KeyPoint, so we create a tuple that resemble it
-    page_keypoints_serializable = list()
-    for keypoint in page_keypoints:
-        keypoint_serializable = (keypoint.pt, keypoint.size,
-                                 keypoint.angle, keypoint.response,
-                                 keypoint.octave, keypoint.class_id)
-        page_keypoints_serializable.append(keypoint_serializable)
+    serialized_page_keypoints = utils.serialize_keypoints(page_keypoints)
 
     corpus['pages'].append(page_file_name)
-    corpus['keypoints'].append(page_keypoints_serializable)
+    corpus['keypoints'].append(serialized_page_keypoints)
     corpus['descriptors'].append(page_descriptors)
 
 

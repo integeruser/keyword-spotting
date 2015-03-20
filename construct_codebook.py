@@ -5,6 +5,7 @@ import itertools
 import numpy
 import re
 import sys
+import utils
 
 
 if len(sys.argv) != 4:
@@ -26,16 +27,8 @@ with open(corpus_file_path, 'rb') as f:
     corpus = cPickle.load(f)
 
 # convert back the serialized keypoints to a KeyPoint instance
-keypoints = list()
-for page_keypoints in corpus['keypoints']:
-    keypoints_unserialized = list()
-    for keypoint in page_keypoints:
-        keypoint_unserialized = cv2.KeyPoint(x=keypoint[0][0], y=keypoint[0][1], _size=keypoint[1],
-                                             _angle=keypoint[2], _response=keypoint[3],
-                                             _octave=keypoint[4], _class_id=keypoint[5])
-        keypoints_unserialized.append(keypoint_unserialized)
-    keypoints.append(keypoints_unserialized)
-corpus['keypoints'] = keypoints
+corpus['keypoints'] = [utils.deserialize_keypoints(page_keypoints)
+                       for page_keypoints in corpus['keypoints']]
 
 assert(len(corpus['pages']) == len(corpus['keypoints']) == len(corpus['descriptors']))
 for page_keypoints, page_descriptors in itertools.izip(corpus['keypoints'], corpus['descriptors']):
