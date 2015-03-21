@@ -36,10 +36,10 @@ for page_file_name in os.listdir(pages_directory_path):
     assert len(page_keypoints) > 0
     assert len(page_keypoints) == len(page_descriptors)
 
-    serialized_page_keypoints = utils.serialize_keypoints(page_keypoints)
+    page_keypoints_serialized = utils.serialize_keypoints(page_keypoints)
 
     corpus['pages'].append(page_file_name)
-    corpus['keypoints'].append(serialized_page_keypoints)
+    corpus['keypoints'].append(page_keypoints_serialized)
     corpus['descriptors'].append(page_descriptors)
 
 
