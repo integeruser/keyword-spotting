@@ -41,8 +41,7 @@ print 'Running k-means on the descriptors space...'
 corpus_descriptors_vstack = numpy.vstack(corpus['descriptors'])
 
 epsilon = 1.0
-# criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
-criteria = (cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
+criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
 attempts = 10
 compactness, labels, d = cv2.kmeans(
     corpus_descriptors_vstack, codebook_size, criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)
