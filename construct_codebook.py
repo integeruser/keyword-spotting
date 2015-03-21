@@ -1,5 +1,4 @@
 #!/usr/bin/env python2 -u
-import cPickle
 import cv2
 import itertools
 import numpy
@@ -25,13 +24,7 @@ print '   {0: <16} = {1}'.format('epsilon', epsilon)
 
 # load precomputed keypoints and descriptors
 print 'Loading corpus...'
-with open(corpus_file_path, 'rb') as f:
-    corpus = cPickle.load(f)
-
-# convert back the serialized keypoints to KeyPoint instances
-corpus['keypoints'] = [utils.deserialize_keypoints(page_keypoints)
-                       for page_keypoints in corpus['keypoints']]
-
+corpus = utils.load_corpus(corpus_file_path)
 assert len(corpus['pages']) > 0
 assert len(corpus['pages']) == len(corpus['keypoints']) == len(corpus['descriptors'])
 for page_keypoints, page_descriptors in itertools.izip(corpus['keypoints'], corpus['descriptors']):
@@ -72,7 +65,7 @@ for group in range(len(d)):
             curr_page_start_index:curr_page_last_index]
         curr_page_curr_group_keypoints = curr_page_keypoints[
             labels.ravel()[curr_page_start_index:curr_page_last_index] == group]
-        codeword_keypoints[page] = utils.serialize_keypoints(curr_page_curr_group_keypoints)
+        codeword_keypoints[page] = curr_page_curr_group_keypoints
 
         curr_page_descriptors = corpus_descriptors_vstack[
             curr_page_start_index:curr_page_last_index]
@@ -103,5 +96,4 @@ contrast_threshold = re.findall(r'corpus-.*-([^(]*)-.*', corpus_file_path)[0]
 n_octave_layers = corpus_file_path[corpus_file_path.rfind('-') + 1:]
 codebook_file_name = 'codebook-{0}-{1}-{2}--{3}-{4}-{5}'.format(
     len(corpus['pages']), contrast_threshold, n_octave_layers, codebook_size, max_iter, epsilon)
-with open(codebook_file_name, 'wb') as f:
-    cPickle.dump(codebook, f, protocol=cPickle.HIGHEST_PROTOCOL)
+utils.save_codebook(codebook, codebook_file_name)

@@ -171,15 +171,7 @@ cv2.imwrite('/Users/fcagnin/Desktop/debug/query.png',
 
 # load the codebook
 print 'Loading the codebook...'
-with open(codebook_file_path, 'rb') as f:
-    codebook = cPickle.load(f)
-
-# convert back the serialized keypoints to KeyPoint instances
-pages = codebook[0]['keypoints'].keys()  # todo: rework
-for codeword in codebook:
-    for page in pages:
-        codeword['keypoints'][page] = utils.deserialize_keypoints(codeword['keypoints'][page])
-
+codebook = utils.load_codebook(codebook_file_path)
 
 # find the nearest codewords to the query descriptors
 print 'Finding the nearest codewords to the query...'
@@ -200,6 +192,7 @@ for i, query_descriptor in enumerate(query_descriptors):
 # find and extract matches in each page
 k = 3
 print 'Finding and extracting top-{0} matches in each page...'.format(k)
+pages = codebook[0]['keypoints'].keys()  # todo: rework
 for page in pages:
     # extract codewords keypoints on the current page
     # index_set = list()

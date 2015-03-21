@@ -1,5 +1,4 @@
 #!/usr/bin/env python2 -u
-import cPickle
 import cv2
 import os
 import sys
@@ -36,10 +35,8 @@ for page_file_name in os.listdir(pages_directory_path):
     assert len(page_keypoints) > 0
     assert len(page_keypoints) == len(page_descriptors)
 
-    page_keypoints_serialized = utils.serialize_keypoints(page_keypoints)
-
     corpus['pages'].append(page_file_name)
-    corpus['keypoints'].append(page_keypoints_serialized)
+    corpus['keypoints'].append(page_keypoints)
     corpus['descriptors'].append(page_descriptors)
 
 
@@ -47,5 +44,4 @@ for page_file_name in os.listdir(pages_directory_path):
 print 'Saving corpus...'
 corpus_file_name = 'corpus-{0}-{1}-{2}'.format(
     len(corpus['pages']), contrast_threshold, n_octave_layers)
-with open(corpus_file_name, 'wb') as f:
-    cPickle.dump(corpus, f, protocol=cPickle.HIGHEST_PROTOCOL)
+utils.save_corpus(corpus, corpus_file_name)
