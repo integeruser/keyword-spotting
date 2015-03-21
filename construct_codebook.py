@@ -52,9 +52,8 @@ compactness, labels, d = cv2.kmeans(
 
 # construct the codebook of k visual words
 print 'Constructing codebook...'
-corpus_keypoints_pt = [keypoint.pt for page_keypoints in corpus['keypoints']
-                       for keypoint in page_keypoints]
-corpus_keypoints_pt_vstack = numpy.vstack(corpus_keypoints_pt)
+corpus_keypoints_vstack = numpy.asarray(
+    [keypoint for page_keypoints in corpus['keypoints'] for keypoint in page_keypoints])
 
 codebook = list()
 # create a codeword for each k-means group found
@@ -62,34 +61,48 @@ for group in range(codebook_size):
     centroid = d[group]
 
     # find which keypoints belong to the current group
-    features = dict.fromkeys(corpus['pages'], list())
+    codeword_keypoints = dict.fromkeys(corpus['pages'], list())
+    codeword_descriptors = dict.fromkeys(corpus['pages'], list())
+
     curr_page_start_index = 0
     curr_page_last_index = 0
     for i, page in enumerate(corpus['pages']):
         curr_page_last_index = curr_page_start_index + len(corpus['keypoints'][i])
 
-        curr_page_keypoints = corpus_keypoints_pt_vstack[
+        curr_page_keypoints = corpus_keypoints_vstack[
             curr_page_start_index:curr_page_last_index]
         curr_page_curr_group_keypoints = curr_page_keypoints[
             labels.ravel()[curr_page_start_index:curr_page_last_index] == group]
-        features[page] = curr_page_curr_group_keypoints
+
+        curr_page_descriptors = corpus_descriptors_vstack[
+            curr_page_start_index:curr_page_last_index]
+        curr_page_curr_group_descriptors = curr_page_descriptors[
+            labels.ravel()[curr_page_start_index:curr_page_last_index] == group]
+
+        codeword_keypoints[page] = utils.serialize_keypoints(curr_page_curr_group_keypoints)
+        codeword_descriptors[page] = curr_page_curr_group_descriptors
 
         curr_page_start_index = curr_page_last_index
 
     codeword = {
         'd': centroid,
-        'features': features
+        'keypoints': codeword_keypoints,
+        'descriptors': codeword_descriptors
     }
     codebook.append(codeword)
 
-assert(len(codebook) == codebook_size)
-assert(sum([len(v) for codeword in codebook for v in codeword['features'].values()])
-       == len(corpus_keypoints_pt_vstack))
+assert len(codebook) == codebook_size
+assert len(corpus_keypoints_vstack) == len(corpus_descriptors_vstack)
+assert sum([len(v) for codeword in codebook for v in codeword['keypoints'].values()]) == len(
+    corpus_keypoints_vstack)
+assert sum([len(v) for codeword in codebook for v in codeword['descriptors'].values()]) == len(
+    corpus_descriptors_vstack)
 
 
 # save codebook for later use
 print 'Saving codebook...'
 contrast_threshold = re.findall(r'corpus-.*-([^(]*)-.*', corpus_file_path)[0]
-codebook_file_name = 'codebook-{0}-{1}-{2}'.format(contrast_threshold, codebook_size, max_iter)
+codebook_file_name = 'codebook-{0}-{1}-{2}-{3}'.format(
+    len(corpus['pages']), contrast_threshold, codebook_size, max_iter)
 with open(codebook_file_name, 'wb') as f:
     cPickle.dump(codebook, f, protocol=cPickle.HIGHEST_PROTOCOL)
