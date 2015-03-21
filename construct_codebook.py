@@ -26,13 +26,14 @@ print 'Loading corpus...'
 with open(corpus_file_path, 'rb') as f:
     corpus = cPickle.load(f)
 
-# convert back the serialized keypoints to a KeyPoint instance
+# convert back the serialized keypoints to KeyPoint instances
 corpus['keypoints'] = [utils.deserialize_keypoints(page_keypoints)
                        for page_keypoints in corpus['keypoints']]
 
-assert(len(corpus['pages']) == len(corpus['keypoints']) == len(corpus['descriptors']))
+assert len(corpus['pages']) > 0
+assert len(corpus['pages']) == len(corpus['keypoints']) == len(corpus['descriptors'])
 for page_keypoints, page_descriptors in itertools.izip(corpus['keypoints'], corpus['descriptors']):
-    assert(len(page_keypoints) == len(page_descriptors))
+    assert len(page_keypoints) == len(page_descriptors)
 
 
 # run k-means on the descriptors space
