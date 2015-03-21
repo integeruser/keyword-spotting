@@ -20,7 +20,8 @@ print '   {0: <20} = {1}'.format('n_octave_layers', n_octave_layers)
 
 ################################################################################
 
-# load the each page of the corpus as grey scale, detect its keypoints and compute its descriptors
+# load each page in pages_directory_path as grey scale, detect its
+# keypoints and compute its descriptors
 print 'Loading pages...'
 corpus = {'pages': list(), 'keypoints': list(), 'descriptors': list()}
 
