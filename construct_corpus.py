@@ -33,6 +33,8 @@ for page_file_name in os.listdir(pages_directory_path):
         '{0}/{1}'.format(pages_directory_path, page_file_name), cv2.CV_LOAD_IMAGE_GRAYSCALE)
 
     page_keypoints, page_descriptors = sift.detectAndCompute(page_image, None)
+    assert len(page_keypoints) > 0
+    assert len(page_keypoints) == len(page_descriptors)
 
     serialized_page_keypoints = utils.serialize_keypoints(page_keypoints)
 
