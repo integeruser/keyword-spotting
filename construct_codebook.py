@@ -1,4 +1,4 @@
-#!/usr/bin/env python -u
+#!/usr/bin/env python2 -u
 import cPickle
 import cv2
 import itertools
