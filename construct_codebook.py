@@ -37,8 +37,8 @@ corpus_descriptors_vstack = numpy.vstack(corpus['descriptors'])
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
 attempts = 10
-compactness, labels, d = cv2.kmeans(
-    corpus_descriptors_vstack, codebook_size, criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)
+compactness, labels, d = cv2.kmeans(corpus_descriptors_vstack, codebook_size, criteria,
+                                    attempts, cv2.KMEANS_RANDOM_CENTERS)
 assert len(d) == codebook_size
 
 
@@ -67,14 +67,12 @@ for group in range(len(d)):
         assert len(corpus['keypoints'][i]) == len(corpus['descriptors'][i])
         curr_page_last_index = curr_page_start_index + len(corpus['keypoints'][i])
 
-        curr_page_keypoints = corpus_keypoints_vstack[
-            curr_page_start_index:curr_page_last_index]
+        curr_page_keypoints = corpus_keypoints_vstack[curr_page_start_index:curr_page_last_index]
         curr_page_curr_group_keypoints = curr_page_keypoints[
             labels.ravel()[curr_page_start_index:curr_page_last_index] == group]
         codeword_keypoints[page] = curr_page_curr_group_keypoints
 
-        curr_page_descriptors = corpus_descriptors_vstack[
-            curr_page_start_index:curr_page_last_index]
+        curr_page_descriptors = corpus_descriptors_vstack[curr_page_start_index:curr_page_last_index]
         curr_page_curr_group_descriptors = curr_page_descriptors[
             labels.ravel()[curr_page_start_index:curr_page_last_index] == group]
         codeword_descriptors[page] = curr_page_curr_group_descriptors
@@ -90,10 +88,10 @@ for group in range(len(d)):
 
 assert len(codebook['codewords']) == codebook_size
 assert len(corpus_keypoints_vstack) == len(corpus_descriptors_vstack)
-assert sum([len(v) for codeword in codebook['codewords'] for v in codeword['keypoints'].values()]) == len(
-    corpus_keypoints_vstack)
-assert sum([len(v) for codeword in codebook['codewords'] for v in codeword['descriptors'].values()]) == len(
-    corpus_descriptors_vstack)
+assert sum([len(v) for codeword in codebook['codewords']
+            for v in codeword['keypoints'].values()]) == len(corpus_keypoints_vstack)
+assert sum([len(v) for codeword in codebook['codewords']
+            for v in codeword['descriptors'].values()]) == len(corpus_descriptors_vstack)
 
 
 # save codebook for later use

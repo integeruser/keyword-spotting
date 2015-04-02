@@ -6,8 +6,7 @@ import utils
 
 
 if len(sys.argv) != 4:
-    sys.exit(
-        'Usage: {0} pages_directory_path contrast_threshold n_octave_layers'.format(sys.argv[0]))
+    sys.exit('Usage: {0} pages_directory_path contrast_threshold n_octave_layers'.format(sys.argv[0]))
 
 pages_directory_path = sys.argv[1]
 contrast_threshold = float(sys.argv[2])
@@ -35,8 +34,8 @@ sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_lay
 
 for page_file_name in os.listdir(pages_directory_path):
     print '   Detecting keypoints and computing descriptors on \'{0}\'...'.format(page_file_name)
-    page_image = cv2.imread(
-        '{0}/{1}'.format(pages_directory_path, page_file_name), cv2.CV_LOAD_IMAGE_GRAYSCALE)
+    page_image = cv2.imread('{0}/{1}'.format(pages_directory_path, page_file_name),
+                            cv2.CV_LOAD_IMAGE_GRAYSCALE)
 
     page_keypoints, page_descriptors = sift.detectAndCompute(page_image, None)
     assert len(page_keypoints) > 0
