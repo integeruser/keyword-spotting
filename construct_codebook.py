@@ -47,7 +47,13 @@ print 'Constructing codebook...'
 corpus_keypoints_vstack = numpy.asarray(
     [keypoint for page_keypoints in corpus['keypoints'] for keypoint in page_keypoints])
 
-codebook = list()
+codebook = {
+    'corpus_file_path': corpus_file_path,
+    'codebook_size': codebook_size,
+    'max_iter': max_iter,
+    'epsilon': epsilon,
+    'codewords': list()
+}
 # create a codeword for each k-means group found
 for group in range(len(d)):
     codeword_centroid = d[group]
@@ -80,13 +86,13 @@ for group in range(len(d)):
         'keypoints': codeword_keypoints,
         'descriptors': codeword_descriptors
     }
-    codebook.append(codeword)
+    codebook['codewords'].append(codeword)
 
-assert len(codebook) == codebook_size
+assert len(codebook['codewords']) == codebook_size
 assert len(corpus_keypoints_vstack) == len(corpus_descriptors_vstack)
-assert sum([len(v) for codeword in codebook for v in codeword['keypoints'].values()]) == len(
+assert sum([len(v) for codeword in codebook['codewords'] for v in codeword['keypoints'].values()]) == len(
     corpus_keypoints_vstack)
-assert sum([len(v) for codeword in codebook for v in codeword['descriptors'].values()]) == len(
+assert sum([len(v) for codeword in codebook['codewords'] for v in codeword['descriptors'].values()]) == len(
     corpus_descriptors_vstack)
 
 
