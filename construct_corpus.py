@@ -22,7 +22,14 @@ print '   {0: <20} = {1}'.format('n_octave_layers', n_octave_layers)
 # load each page in pages_directory_path as grey scale, detect its
 # keypoints and compute its descriptors
 print 'Loading pages...'
-corpus = {'pages': list(), 'keypoints': list(), 'descriptors': list()}
+corpus = {
+    'pages_directory_path': pages_directory_path,
+    'contrast_threshold': contrast_threshold,
+    'n_octave_layers': n_octave_layers,
+    'pages': list(),
+    'keypoints': list(),
+    'descriptors': list()
+}
 
 sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
 
