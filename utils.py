@@ -34,7 +34,7 @@ def load_corpus(corpus_file_path):
 
 
 def save_codebook(codebook, codebook_file_path):
-    for codeword in codebook:
+    for codeword in codebook['codewords']:
         for page in codeword['keypoints']:
             codeword['keypoints'][page] = serialize_keypoints(codeword['keypoints'][page])
 
@@ -46,7 +46,7 @@ def load_codebook(codebook_file_path):
     with open(codebook_file_path, 'rb') as f:
         codebook = cPickle.load(f)
 
-    for codeword in codebook:
+    for codeword in codebook['codewords']:
         for page in codeword['keypoints']:
             codeword['keypoints'][page] = deserialize_keypoints(codeword['keypoints'][page])
     return codebook
