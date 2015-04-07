@@ -98,6 +98,7 @@ def extract_and_save_matches(page_file_name, matches, offset_pixel=25):
     for i in range(len(matches)):
         match = matches[i]
 
+        pages_directory_path = 'data sets/typesetted/'
         page_image = cv2.imread('{0}/{1}'.format(pages_directory_path, page_file_name))
 
         # keep only non-empy keypoints
@@ -132,19 +133,16 @@ def extract_and_save_matches(page_file_name, matches, offset_pixel=25):
 
 ################################################################################
 
-if len(sys.argv) != 6:
-    sys.exit(
-        'Usage: {0} pages_directory_path query_file_path codebook_file_path n_features rho'.format(sys.argv[0]))
+if len(sys.argv) != 5:
+    sys.exit('Usage: {0} codebook_file_path query_file_path n_features rho'.format(sys.argv[0]))
 
-pages_directory_path = sys.argv[1]
+codebook_file_path = sys.argv[1]
 query_file_path = sys.argv[2]
-codebook_file_path = sys.argv[3]
-n_features = int(sys.argv[4])
-rho = float(sys.argv[5])
+n_features = int(sys.argv[3])
+rho = float(sys.argv[4])
 print 'Starting script...'
-print '   {0: <20} = {1}'.format('pages_directory_path', pages_directory_path)
-print '   {0: <20} = {1}'.format('query_file_path', query_file_path)
 print '   {0: <20} = {1}'.format('codebook_file_path', codebook_file_path)
+print '   {0: <20} = {1}'.format('query_file_path', query_file_path)
 print '   {0: <20} = {1}'.format('n_features', n_features)
 print '   {0: <20} = {1}'.format('rho', rho)
 
@@ -160,12 +158,9 @@ assert len(query_keypoints) > 0
 assert len(query_keypoints) == len(query_descriptors)
 
 print '   Keypoints detected: {0}'.format(len(query_keypoints))
-# (sometimes the keypoints detected are one more that requested)
-assert len(query_keypoints) <= n_features + 1
 
 ### debug ###
-cv2.imwrite('/Users/fcagnin/Desktop/debug/query.png',
-            cv2.drawKeypoints(query_image, query_keypoints))
+cv2.imwrite('/Users/fcagnin/Desktop/debug/query.png', cv2.drawKeypoints(query_image, query_keypoints))
 ### debug ###
 
 
@@ -178,9 +173,9 @@ print 'Finding the nearest codewords to the query...'
 query_points = list()
 for i, query_descriptor in enumerate(query_descriptors):
     # find nearest centroid
-    query_descriptor_distances = [
-        numpy.linalg.norm(query_descriptor - codeword['d']) for codeword in codebook]
-    nearest_codeword = codebook[numpy.argmin(query_descriptor_distances)]
+    query_descriptor_distances = [numpy.linalg.norm(query_descriptor - codeword['d'])
+        for codeword in codebook['codewords']]
+    nearest_codeword = codebook['codewords'][numpy.argmin(query_descriptor_distances)]
 
     query_point = {
         'w': nearest_codeword,
@@ -190,9 +185,9 @@ for i, query_descriptor in enumerate(query_descriptors):
 
 
 # find and extract matches in each page
-k = 3
+k = 10
 print 'Finding and extracting top-{0} matches in each page...'.format(k)
-pages = codebook[0]['keypoints'].keys()  # todo: rework
+pages = codebook['codewords'][0]['keypoints'].keys()  # todo: rework
 for page in pages:
     # extract codewords keypoints on the current page
     # index_set = list()
