@@ -1,5 +1,8 @@
+#!/usr/bin/env python2 -u
 import cPickle
 import cv2
+import sys
+import utils
 
 
 def serialize_keypoints(keypoints):
@@ -14,7 +17,6 @@ def deserialize_keypoints(keypoints):
                          _octave=keypoint[4], _class_id=keypoint[5]) for keypoint in keypoints]
 
 ################################################################################
-
 
 def save_corpus(corpus, corpus_file_path):
     for i, page_keypoints in enumerate(corpus['keypoints']):
@@ -50,3 +52,53 @@ def load_codebook(codebook_file_path):
         for page in codeword['keypoints']:
             codeword['keypoints'][page] = deserialize_keypoints(codeword['keypoints'][page])
     return codebook
+
+################################################################################
+
+def pcr():
+    if len(sys.argv) != 3:
+        sys.exit('Usage: {0} pcr corpus_file_path'.format(sys.argv[0]))
+
+    corpus_file_path = sys.argv[2]
+    print 'Starting pcr...'
+    print '   {0: <16} = {1}'.format('corpus_file_path', corpus_file_path)
+
+    ########################################################################
+
+    print 'Corpus info:'
+    corpus = utils.load_corpus(corpus_file_path)
+
+    print '   {0: <20} = {1}'.format('pages_directory_path', corpus['pages_directory_path'])
+    print '   {0: <20} = {1}'.format('contrast_threshold', corpus['contrast_threshold'])
+    print '   {0: <20} = {1}'.format('n_octave_layers', corpus['n_octave_layers'])
+    print '   {0: <20} = {1}'.format('pages', corpus['pages'])
+    print '   {0: <20} = {1}'.format('keypoints per page', [len(page_keypoints) for page_keypoints in corpus['keypoints']])
+    print '   {0: <20} = {1}'.format('descriptors per page', [len(page_descriptors) for page_descriptors in corpus['descriptors']])
+
+def pcd():
+    if len(sys.argv) != 3:
+        sys.exit('Usage: {0} pcd codebook_file_path'.format(sys.argv[0]))
+
+    codebook_file_path = sys.argv[2]
+    print 'Starting pcd...'
+    print '   {0: <18} = {1}'.format('codebook_file_path', codebook_file_path)
+
+    ########################################################################
+
+    print 'Codebook info:'
+    codebook = load_codebook(codebook_file_path)
+
+    print '   {0: <16} = {1}'.format('corpus_file_path', codebook['corpus_file_path'])
+    print '   {0: <16} = {1}'.format('codebook_size', codebook['codebook_size'])
+    print '   {0: <16} = {1}'.format('max_iter', codebook['max_iter'])
+    print '   {0: <16} = {1}'.format('epsilon', codebook['epsilon'])
+    print '   {0: <16} = {1}'.format('num of codewords', len(codebook['codewords']))
+
+################################################################################
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        sys.exit('Usage: {0} mode'.format(sys.argv[0]))
+
+    mode = sys.argv[1]
+    locals()[mode]()
