@@ -2,7 +2,6 @@
 import cv2
 import itertools
 import numpy
-import re
 import sys
 import utils
 
@@ -37,8 +36,8 @@ corpus_descriptors_vstack = numpy.vstack(corpus['descriptors'])
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
 attempts = 10
-compactness, labels, d = cv2.kmeans(corpus_descriptors_vstack, codebook_size, criteria,
-                                    attempts, cv2.KMEANS_RANDOM_CENTERS)
+compactness, labels, d = cv2.kmeans(corpus_descriptors_vstack, codebook_size, None,
+                                    criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)
 assert len(d) == codebook_size
 
 
@@ -54,6 +53,7 @@ codebook = {
     'epsilon': epsilon,
     'codewords': list()
 }
+
 # create a codeword for each k-means group found
 for group in range(len(d)):
     codeword_centroid = d[group]
@@ -96,8 +96,7 @@ assert sum([len(v) for codeword in codebook['codewords']
 
 # save codebook for later use
 print('Saving codebook...')
-contrast_threshold = re.findall(r'corpus-.*-([^(]*)-.*', corpus_file_path)[0]
-n_octave_layers = corpus_file_path[corpus_file_path.rfind('-') + 1:]
 codebook_file_name = 'codebook-{0}-{1}-{2}--{3}-{4}-{5}'.format(
-    len(corpus['pages']), contrast_threshold, n_octave_layers, codebook_size, max_iter, epsilon)
+    len(corpus['pages']), corpus['contrast_threshold'], corpus['n_octave_layers'],
+    codebook_size, max_iter, epsilon)
 utils.save_codebook(codebook, codebook_file_name)

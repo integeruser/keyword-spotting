@@ -18,8 +18,7 @@ print('   {0: <20} = {1}'.format('n_octave_layers', n_octave_layers))
 
 ################################################################################
 
-# load each page in pages_directory_path as grey scale, detect its
-# keypoints and compute its descriptors
+# load each page as grey scale, detect its keypoints and compute its descriptors
 print('Loading pages...')
 corpus = {
     'pages_directory_path': pages_directory_path,
@@ -30,12 +29,12 @@ corpus = {
     'descriptors': list()
 }
 
-sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
+sift = cv2.xfeatures2d.SIFT_create(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
 
 for page_file_name in os.listdir(pages_directory_path):
     print('   Detecting keypoints and computing descriptors on \'{0}\'...'.format(page_file_name))
-    page_image = cv2.imread('{0}/{1}'.format(pages_directory_path, page_file_name),
-                            cv2.CV_LOAD_IMAGE_GRAYSCALE)
+    page_image = cv2.imread('{0}/{1}'.format(pages_directory_path, page_file_name))
+    page_image = cv2.cvtColor(page_image, cv2.COLOR_BGR2GRAY)
 
     page_keypoints, page_descriptors = sift.detectAndCompute(page_image, None)
     assert len(page_keypoints) > 0
