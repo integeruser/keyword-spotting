@@ -1,4 +1,5 @@
 #!/usr/bin/env python2 -u
+import copy
 import cPickle
 import cv2
 import sys
@@ -19,12 +20,13 @@ def deserialize_keypoints(keypoints):
 ################################################################################
 
 def save_corpus(corpus, corpus_file_path):
+    corpus = copy.deepcopy(corpus)
+
     for i, page_keypoints in enumerate(corpus['keypoints']):
         corpus['keypoints'][i] = serialize_keypoints(page_keypoints)
 
     with open(corpus_file_path, 'wb') as f:
         cPickle.dump(corpus, f, protocol=cPickle.HIGHEST_PROTOCOL)
-
 
 def load_corpus(corpus_file_path):
     with open(corpus_file_path, 'rb') as f:
@@ -36,13 +38,14 @@ def load_corpus(corpus_file_path):
 
 
 def save_codebook(codebook, codebook_file_path):
+    codebook = copy.deepcopy(codebook)
+
     for codeword in codebook['codewords']:
         for page in codeword['keypoints']:
             codeword['keypoints'][page] = serialize_keypoints(codeword['keypoints'][page])
 
     with open(codebook_file_path, 'wb') as f:
         cPickle.dump(codebook, f, protocol=cPickle.HIGHEST_PROTOCOL)
-
 
 def load_codebook(codebook_file_path):
     with open(codebook_file_path, 'rb') as f:
@@ -52,6 +55,7 @@ def load_codebook(codebook_file_path):
         for page in codeword['keypoints']:
             codeword['keypoints'][page] = deserialize_keypoints(codeword['keypoints'][page])
     return codebook
+
 
 ################################################################################
 
