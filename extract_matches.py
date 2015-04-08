@@ -10,7 +10,6 @@ if len(sys.argv) != 4:
 pages_directory_path = sys.argv[1]
 matches_file_path = sys.argv[2]
 output_directory_path = sys.argv[3]
-offset_pixel = 25
 print 'Starting script...'
 print '   {0: <21} = {1}'.format('pages_directory_path', pages_directory_path)
 print '   {0: <21} = {1}'.format('matches_file_path', matches_file_path)
@@ -35,8 +34,14 @@ for page, page_matches in matches.viewitems():
 
         # keep only non-empy keypoints
         match_keypoints = [keypoint for keypoint in match if keypoint]
+        match_keypoints = utils.namedtuple_keypoints_to_cv2(match_keypoints)
 
         # draw keypoints on original image
+        page_image = cv2.drawKeypoints(page_image, match_keypoints, None,
+                                       flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+        # draw box around match
+        offset_pixel = 25
         x_min = float('inf')
         y_min = float('inf')
         x_max = 0
@@ -52,15 +57,11 @@ for page, page_matches in matches.viewitems():
                 y_min = y
             if y > y_max:
                 y_max = y
-            cv2.circle(page_image, (x, y), radius=5, color=(0, 0, 255))
 
         x_min += - offset_pixel
         y_min += - offset_pixel
         x_max += + offset_pixel
         y_max += + offset_pixel
-
-        # draw box on match
-        page_image = cv2.rectangle(page_image, (x_min, y_min), (x_max, y_max),
-                                   (0, 255, 0), 2)
+        page_image = cv2.rectangle(page_image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
 
     cv2.imwrite('{0}/{1}.png'.format(output_directory_path, page), page_image)
