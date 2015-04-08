@@ -5,6 +5,7 @@ codebooks/*
 corpuses/*
 data sets/*
 documents/*
+matches/*
 pages*/*
 queries/*
 *.pyc
