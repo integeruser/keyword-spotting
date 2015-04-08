@@ -11,13 +11,18 @@ import utils
 KeyPoint = collections.namedtuple('KeyPoint', 'pt angle size response')
 
 def cv2_to_namedtuple_keypoints(keypoints):
-    return[KeyPoint(keypoint.pt, keypoint.angle, keypoint.size, keypoint.response) for keypoint in keypoints]
+    return [KeyPoint(keypoint.pt, keypoint.angle, keypoint.size, keypoint.response) for keypoint in keypoints]
+
+def namedtuple_keypoints_to_cv2(keypoints):
+    return [cv2.KeyPoint(x=keypoint[0][0], y=keypoint[0][1], _size=keypoint[2],
+                         _angle=keypoint[1], _response=keypoint[3])
+            for keypoint in keypoints]
 
 def tuple_to_namedtuple_keypoints(keypoints):
-    return[KeyPoint._make(keypoint) for keypoint in keypoints]
+    return [KeyPoint._make(keypoint) for keypoint in keypoints]
 
 def matches_to_namedtuple_keypoints(keypoints):
-    return[None if not keypoint else KeyPoint._make(keypoint) for keypoint in keypoints]
+    return [None if not keypoint else KeyPoint._make(keypoint) for keypoint in keypoints]
 
 ################################################################################
 
