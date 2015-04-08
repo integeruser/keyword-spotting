@@ -30,7 +30,6 @@ for page, page_matches in matches.viewitems():
     for i, match_scored in enumerate(top_k_page_matches):
         match = match_scored[0]
 
-        pages_directory_path = 'data sets/typesetted/'
         page_image = cv2.imread('{0}/{1}'.format(pages_directory_path, page))
 
         # keep only non-empy keypoints
