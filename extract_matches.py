@@ -4,15 +4,17 @@ import sys
 import utils
 
 
-if len(sys.argv) != 3:
-    sys.exit('Usage: {0} pages_directory_path matches_file_path'.format(sys.argv[0]))
+if len(sys.argv) != 4:
+    sys.exit('Usage: {0} pages_directory_path matches_file_path output_directory_path'.format(sys.argv[0]))
 
 pages_directory_path = sys.argv[1]
 matches_file_path = sys.argv[2]
+output_directory_path = sys.argv[3]
 offset_pixel = 25
 print 'Starting script...'
-print '   {0: <20} = {1}'.format('pages_directory_path', pages_directory_path)
-print '   {0: <20} = {1}'.format('matches_file_path', matches_file_path)
+print '   {0: <21} = {1}'.format('pages_directory_path', pages_directory_path)
+print '   {0: <21} = {1}'.format('matches_file_path', matches_file_path)
+print '   {0: <21} = {1}'.format('output_directory_path', output_directory_path)
 
 ################################################################################
 
@@ -61,4 +63,4 @@ for page, page_matches in matches.viewitems():
         page_image = cv2.rectangle(page_image, (x_min, y_min), (x_max, y_max),
                                    (0, 255, 0), 2)
 
-    cv2.imwrite('/Users/fcagnin/Desktop/output/{0}.png'.format(page), page_image)
+    cv2.imwrite('{0}/{1}.png'.format(output_directory_path, page), page_image)
