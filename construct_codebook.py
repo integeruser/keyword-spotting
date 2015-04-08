@@ -89,9 +89,9 @@ for group in range(len(d)):
 assert len(codebook['codewords']) == codebook_size
 assert len(corpus_keypoints_vstack) == len(corpus_descriptors_vstack)
 assert sum([len(v) for codeword in codebook['codewords']
-            for v in codeword['keypoints'].values()]) == len(corpus_keypoints_vstack)
+            for v in codeword['keypoints'].viewvalues()]) == len(corpus_keypoints_vstack)
 assert sum([len(v) for codeword in codebook['codewords']
-            for v in codeword['descriptors'].values()]) == len(corpus_descriptors_vstack)
+            for v in codeword['descriptors'].viewvalues()]) == len(corpus_descriptors_vstack)
 
 
 # save codebook for later use
@@ -99,4 +99,4 @@ print('Saving codebook...')
 codebook_file_name = 'codebook-{0}-{1}-{2}--{3}-{4}-{5}'.format(
     len(corpus['pages']), corpus['contrast_threshold'], corpus['n_octave_layers'],
     codebook_size, max_iter, epsilon)
-utils.save_codebook(codebook, codebook_file_name)
+utils.save_codebook(codebook, codebook_file_name)  # codebook is modified after this operation

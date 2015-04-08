@@ -49,4 +49,4 @@ for page_file_name in os.listdir(pages_directory_path):
 print('Saving corpus...')
 corpus_file_name = 'corpus-{0}-{1}-{2}'.format(
     len(corpus['pages']), contrast_threshold, n_octave_layers)
-utils.save_corpus(corpus, corpus_file_name)
+utils.save_corpus(corpus, corpus_file_name)  # corpus is modified after this operation
