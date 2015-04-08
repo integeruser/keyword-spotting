@@ -1,29 +1,43 @@
 #!/usr/bin/env python2 -u
-import copy
+import collections
 import cPickle
 import cv2
+import json
+import re
 import sys
 import utils
 
 
-def serialize_keypoints(keypoints):
-    return [(keypoint.pt, keypoint.size,
-             keypoint.angle, keypoint.response,
-             keypoint.octave, keypoint.class_id) for keypoint in keypoints]
+KeyPoint = collections.namedtuple('KeyPoint', 'pt angle size response')
 
+def cv2_to_namedtuple_keypoints(keypoints):
+    return[KeyPoint(keypoint.pt, keypoint.angle, keypoint.size, keypoint.response) for keypoint in keypoints]
 
-def deserialize_keypoints(keypoints):
-    return [cv2.KeyPoint(x=keypoint[0][0], y=keypoint[0][1], _size=keypoint[1],
-                         _angle=keypoint[2], _response=keypoint[3],
-                         _octave=keypoint[4], _class_id=keypoint[5]) for keypoint in keypoints]
+def tuple_to_namedtuple_keypoints(keypoints):
+    return[None if not keypoint else KeyPoint._make(keypoint) for keypoint in keypoints]
+
+def matches_to_namedtuple_keypoints(match_scored):
+    # print type(keypoints)
+    # print type(keypoints[0])
+    # print 'asdf' + str(keypoints[0])
+    # print type(keypoints[1])
+    # print keypoints[1]
+
+    # print 'me'
+    # print keypoints[1][1]
+    # print keypoints[1][0]
+    # print keypoints[1][1]
+    # print keypoints[1][2]
+    # print keypoints[1][3]
+    match = match_scored
+    return[KeyPoint(keypoint[0], keypoint[1], keypoint[2], keypoint[3]) if keypoint else None
+           for match, score in match_scored for keypoint in match]
 
 ################################################################################
 
 def save_corpus(corpus, corpus_file_path):
-    corpus = copy.deepcopy(corpus)
-
     for i, page_keypoints in enumerate(corpus['keypoints']):
-        corpus['keypoints'][i] = serialize_keypoints(page_keypoints)
+        corpus['keypoints'][i] = cv2_to_namedtuple_keypoints(page_keypoints)
 
     with open(corpus_file_path, 'wb') as f:
         cPickle.dump(corpus, f, protocol=cPickle.HIGHEST_PROTOCOL)
@@ -32,18 +46,12 @@ def load_corpus(corpus_file_path):
     with open(corpus_file_path, 'rb') as f:
         corpus = cPickle.load(f)
 
-    corpus['keypoints'] = [
-        deserialize_keypoints(page_keypoints) for page_keypoints in corpus['keypoints']]
+    corpus['keypoints'] = [tuple_to_namedtuple_keypoints(page_keypoints)
+                           for page_keypoints in corpus['keypoints']]
     return corpus
 
 
 def save_codebook(codebook, codebook_file_path):
-    codebook = copy.deepcopy(codebook)
-
-    for codeword in codebook['codewords']:
-        for page in codeword['keypoints']:
-            codeword['keypoints'][page] = serialize_keypoints(codeword['keypoints'][page])
-
     with open(codebook_file_path, 'wb') as f:
         cPickle.dump(codebook, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
@@ -53,9 +61,33 @@ def load_codebook(codebook_file_path):
 
     for codeword in codebook['codewords']:
         for page in codeword['keypoints']:
-            codeword['keypoints'][page] = deserialize_keypoints(codeword['keypoints'][page])
+            codeword['keypoints'][page] = tuple_to_namedtuple_keypoints(codeword['keypoints'][page])
     return codebook
 
+
+def save_matches(matches, matches_file_path):
+    # for page in matches:
+    #     n = list()
+    #     for match, score in matches[page]:
+    #         l = [keypoint for keypoint in match if keypoint]
+    #         # n.append(serialize_keypoints(l))
+    #         n.append(l)
+    #     matches[page] = n
+
+    with open(matches_file_path, 'w') as f:
+        json.dump(matches, f, indent=4)
+
+def load_matches(matches_file_path):
+    with open(matches_file_path) as f:
+        matches = json.load(f)
+
+    for page in matches:
+        for i, match_scored in enumerate(matches[page]):
+            match = match_scored[0]
+            score = match_scored[1]
+            # matches[page][i] = (tuple_to_namedtuple_keypoints(match), score)
+            matches[page][i] = tuple_to_namedtuple_keypoints(match)
+    return matches
 
 ################################################################################
 
@@ -92,11 +124,31 @@ def pcd():
     print 'Codebook info:'
     codebook = load_codebook(codebook_file_path)
 
-    print '   {0: <16} = {1}'.format('corpus_file_path', codebook['corpus_file_path'])
-    print '   {0: <16} = {1}'.format('codebook_size', codebook['codebook_size'])
-    print '   {0: <16} = {1}'.format('max_iter', codebook['max_iter'])
-    print '   {0: <16} = {1}'.format('epsilon', codebook['epsilon'])
-    print '   {0: <16} = {1}'.format('num of codewords', len(codebook['codewords']))
+    print '   {0: <23} = {1}'.format('corpus_file_path', codebook['corpus_file_path'])
+    print '   {0: <23} = {1}'.format('codebook_size', codebook['codebook_size'])
+    print '   {0: <23} = {1}'.format('max_iter', codebook['max_iter'])
+    print '   {0: <23} = {1}'.format('epsilon', codebook['epsilon'])
+    print '   {0: <23} = {1}'.format('num of codewords', len(codebook['codewords']))
+    print '   {0: <23} = {1}'.format('keypoints count', sum([len(v) for codeword in codebook['codewords']
+                                                             for v in codeword['keypoints'].viewvalues()]))
+    print '   {0: <23} = {1}'.format('keypoints per codewords', [len(v) for codeword in codebook['codewords']
+                                                                 for v in codeword['keypoints'].viewvalues()])
+
+def pmt():
+    if len(sys.argv) != 3:
+        sys.exit('Usage: {0} pmt matches_file_path'.format(sys.argv[0]))
+
+    matches_file_path = sys.argv[2]
+    print 'Starting pmt...'
+    print '   {0: <17} = {1}'.format('matches_file_path', matches_file_path)
+
+    ########################################################################
+
+    print 'Matches info:'
+    matches = load_matches(matches_file_path)
+
+    print '   {0: <18} = {1}'.format('codebook_file_path', codebook_file_path)
+    print '   {0: <18} = {1}'.format('pages', matches.keys())
 
 ################################################################################
 

@@ -1,11 +1,9 @@
 #!/usr/bin/env python2 -u
-import cPickle
 import cv2
 import itertools
 import numpy
 import sys
 import utils
-
 
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
@@ -31,7 +29,6 @@ def draw_barplot(descriptor, query_desc, out_file_name):
     # plt.savefig('/Users/fcagnin/Desktop/debug/{0}.png'.format(out_file_name))
     # plt.close(fig)
 
-
 def draw_keypoints(image_file_path, image_keypoints, out_file_name):
     file_image = cv2.imread(image_file_path)
     image_keypoints = [keypoint for keypoint in image_keypoints if keypoint != []]
@@ -55,14 +52,15 @@ def draw_keypoints(image_file_path, image_keypoints, out_file_name):
 #     return True
 
 def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tolerance=40, tolerancesq=20):
-    c1 = keypoint_to_add.angle < (query_keypoints[i_q_new].angle - angle_tolerance / 2) % 360
-    c2 = keypoint_to_add.angle > (query_keypoints[i_q_new].angle + angle_tolerance / 2) % 360
+    # todo
+    c1 = keypoint_to_add.angle < (query_keypoints[i_q_new].angle - angle_tolerance / 2.0) % 360
+    c2 = keypoint_to_add.angle > (query_keypoints[i_q_new].angle + angle_tolerance / 2.0) % 360
     if c1 or c2:
         return False
 
-    for i in range(len(match['keypoints'])):
-        if match['keypoints'][i] != []:
-            a = numpy.asarray(match['keypoints'][i].pt)
+    for i in range(len(match)):
+        if match[i]:
+            a = numpy.asarray(match[i].pt)
             b = numpy.asarray(keypoint_to_add.pt)
             c = numpy.asarray(query_keypoints[i].pt)
             d = numpy.asarray(query_keypoints[i_q_new].pt)
@@ -73,7 +71,7 @@ def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tole
 
 # todo: debug
 def compute_match_err(query_keypoints, match):
-    match_keypoints = [keypoint for keypoint in match['keypoints'] if keypoint != []]
+    match_keypoints = [keypoint for keypoint in match if keypoint]
     if len(match_keypoints) == 0:
         return 0
 
@@ -89,47 +87,9 @@ def compute_match_err(query_keypoints, match):
             match_keypoints_diff = abs(
                 numpy.linalg.norm(c - d))
             match_err += (query_keypoints_diff - match_keypoints_diff) ** 2
-    match_err /= (match['length'] ** 2)
+    match_len = sum([1 for keypoint in match if keypoint])
+    match_err /= (match_len ** 2)
     return match_err
-
-
-# todo: debug
-def extract_and_save_matches(page_file_name, matches, offset_pixel=25):
-    for i in range(len(matches)):
-        match = matches[i]
-
-        pages_directory_path = 'data sets/typesetted/'
-        page_image = cv2.imread('{0}/{1}'.format(pages_directory_path, page_file_name))
-
-        # keep only non-empy keypoints
-        match_keypoints = [keypoint for keypoint in match['keypoints'] if keypoint != []]
-
-        # draw keypoints on original image
-        x_min = float('inf')
-        y_min = float('inf')
-        x_max = 0
-        y_max = 0
-        for keypoint in match_keypoints:
-            x = int(keypoint.pt[0])
-            y = int(keypoint.pt[1])
-            if x < x_min:
-                x_min = x
-            if x > x_max:
-                x_max = x
-            if y < y_min:
-                y_min = y
-            if y > y_max:
-                y_max = y
-            cv2.circle(page_image, (x, y), radius=5, color=(0, 0, 255))
-
-        x_min += - offset_pixel
-        y_min += - offset_pixel
-        x_max += + offset_pixel
-        y_max += + offset_pixel
-
-        extracted_match = page_image[y_min:y_max, x_min:x_max]
-        match_file_path = '/Users/fcagnin/Desktop/output/{0}-{1}.png'.format(page_file_name, i)
-        cv2.imwrite(match_file_path, extracted_match)
 
 ################################################################################
 
@@ -141,18 +101,20 @@ query_file_path = sys.argv[2]
 n_features = int(sys.argv[3])
 rho = float(sys.argv[4])
 print 'Starting script...'
-print '   {0: <20} = {1}'.format('codebook_file_path', codebook_file_path)
-print '   {0: <20} = {1}'.format('query_file_path', query_file_path)
-print '   {0: <20} = {1}'.format('n_features', n_features)
-print '   {0: <20} = {1}'.format('rho', rho)
+print '   {0: <18} = {1}'.format('codebook_file_path', codebook_file_path)
+print '   {0: <18} = {1}'.format('query_file_path', query_file_path)
+print '   {0: <18} = {1}'.format('n_features', n_features)
+print '   {0: <18} = {1}'.format('rho', rho)
 
 ################################################################################
 
 # load the query as grey scale, detect its keypoints and compute its descriptors
 print 'Detecting keypoints and computing descriptors on \'{0}\'...'.format(query_file_path)
-sift = cv2.SIFT(nfeatures=n_features, nOctaveLayers=1)
+sift = cv2.xfeatures2d.SIFT_create(nfeatures=n_features, nOctaveLayers=1)
 
-query_image = cv2.imread(query_file_path, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+query_image = cv2.imread(query_file_path)
+query_image = cv2.cvtColor(query_image, cv2.COLOR_BGR2GRAY)
+
 query_keypoints, query_descriptors = sift.detectAndCompute(query_image, None)
 assert len(query_keypoints) > 0
 assert len(query_keypoints) == len(query_descriptors)
@@ -160,21 +122,25 @@ assert len(query_keypoints) == len(query_descriptors)
 print '   Keypoints detected: {0}'.format(len(query_keypoints))
 
 ### debug ###
-cv2.imwrite('/Users/fcagnin/Desktop/debug/query.png', cv2.drawKeypoints(query_image, query_keypoints))
+i = query_image.copy()
+i = cv2.drawKeypoints(query_image, query_keypoints, i)
+cv2.imwrite('/Users/fcagnin/Desktop/debug/query.png', i)
 ### debug ###
 
 
 # load the codebook
 print 'Loading the codebook...'
 codebook = utils.load_codebook(codebook_file_path)
+print '   Codebook keypoints count: {0}'.format(sum([len(v) for codeword in codebook['codewords']
+                                                     for v in codeword['keypoints'].viewvalues()]))
 
 # find the nearest codewords to the query descriptors
 print 'Finding the nearest codewords to the query...'
 query_points = list()
 for i, query_descriptor in enumerate(query_descriptors):
     # find nearest centroid
-    query_descriptor_distances = [numpy.linalg.norm(query_descriptor - codeword['d'])
-        for codeword in codebook['codewords']]
+    query_descriptor_distances = [
+        numpy.linalg.norm(query_descriptor - codeword['d']) for codeword in codebook['codewords']]
     nearest_codeword = codebook['codewords'][numpy.argmin(query_descriptor_distances)]
 
     query_point = {
@@ -183,11 +149,10 @@ for i, query_descriptor in enumerate(query_descriptors):
     }
     query_points.append(query_point)
 
-
 # find and extract matches in each page
-k = 10
-print 'Finding and extracting top-{0} matches in each page...'.format(k)
+print 'Finding and extracting matches in each page...'
 pages = codebook['codewords'][0]['keypoints'].keys()  # todo: rework
+corpus_matches = dict()
 for page in pages:
     # extract codewords keypoints on the current page
     # index_set = list()
@@ -199,7 +164,7 @@ for page in pages:
     #     })
 
     # find matches on current page
-    match = {'keypoints': [], 'length': 0}
+    match = []
     matches = [match]  # start with empty match
 
     query_keypoints_remaining = len(query_keypoints)
@@ -207,7 +172,7 @@ for page in pages:
         curr_codeword = query_point['w']
         curr_codeword_keypoints = curr_codeword['keypoints'][page]
         ### debug ###
-        # print '   len codeword_keypoints: {0}'.format(len(curr_codeword_keypoints))
+        print '   len codeword_keypoints: {0}'.format(len(curr_codeword_keypoints))
         ### debug ###
 
         new_matches = []
@@ -220,10 +185,7 @@ for page in pages:
             for j, keypoint in enumerate(curr_codeword_keypoints):
                 if geometric_check(match, keypoint, query_keypoints, i):
                     # add the better match to the new matches
-                    new_match = {
-                        'keypoints': match['keypoints'] + [keypoint],
-                        'length': match['length'] + 1
-                    }
+                    new_match = match + [keypoint]
                     new_matches.append(new_match)
                     found_better_match = True
 
@@ -235,12 +197,10 @@ for page in pages:
                     ### debug ###
 
             if not found_better_match:
-                if match['length'] + query_keypoints_remaining >= len(query_keypoints) * rho:
+                match_len = sum([1 for keypoint in match if keypoint])
+                if match_len + query_keypoints_remaining >= len(query_keypoints) * rho:
                     # keep the old match going
-                    new_match = {
-                        'keypoints': match['keypoints'] + [[]],
-                        'length': match['length']
-                    }
+                    new_match = match + [None]
                     new_matches.append(new_match)
 
         query_keypoints_remaining -= 1
@@ -264,8 +224,11 @@ for page in pages:
 
     print '   Found {0} matches in page {1}'.format(len(matches), page)
     if (len(matches) > 0):
-        matches_scores = [
+        matches_scored = [
             (page_match, compute_match_err(query_keypoints, page_match)) for page_match in matches]
 
-        top_k_matches = sorted(matches_scores, key=lambda x: x[1])[:k]
-        extract_and_save_matches(page, [p[0] for p in top_k_matches])
+        # top_k_matches = sorted(matches_scores, key=lambda x: x[1])
+        # extract_and_save_matches(page, [p[0] for p in top_k_matches])
+        corpus_matches[page] = matches_scored
+
+utils.save_matches(corpus_matches, 'matches.json')
