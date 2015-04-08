@@ -27,10 +27,9 @@ for page, page_matches in matches.viewitems():
     top_k_page_matches = sorted(page_matches, key=lambda x: x[1])[:k]
     assert len(top_k_page_matches) <= k
 
+    page_image = cv2.imread('{0}/{1}'.format(pages_directory_path, page))
     for i, match_scored in enumerate(top_k_page_matches):
         match = match_scored[0]
-
-        page_image = cv2.imread('{0}/{1}'.format(pages_directory_path, page))
 
         # keep only non-empy keypoints
         match_keypoints = [keypoint for keypoint in match if keypoint]
@@ -58,6 +57,8 @@ for page, page_matches in matches.viewitems():
         x_max += + offset_pixel
         y_max += + offset_pixel
 
-        extracted_match = page_image[y_min:y_max, x_min:x_max]
-        match_file_path = '/Users/fcagnin/Desktop/output/{0}-{1}.png'.format(page, i)
-        cv2.imwrite(match_file_path, extracted_match)
+        # draw box on match
+        page_image = cv2.rectangle(page_image, (x_min, y_min), (x_max, y_max),
+                                   (0, 255, 0), 2)
+
+    cv2.imwrite('/Users/fcagnin/Desktop/output/{0}.png'.format(page), page_image)
