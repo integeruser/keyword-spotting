@@ -5,39 +5,6 @@ import numpy
 import sys
 import utils
 
-import matplotlib.mlab as mlab
-import matplotlib.pyplot as plt
-
-
-### debug ###
-def draw_barplot(descriptor, query_desc, out_file_name):
-    fig, ax = plt.subplots()
-    w = 1
-    ind1 = numpy.arange(0, 128 * (4 + w), 4 + w)
-    ind2 = numpy.arange(w, 128 * (4 + w), 4 + w)
-    ax.bar(ind1, descriptor, width=w, color='r', edgecolor='none')
-    ax.bar(ind2, query_desc, width=w, color='b', edgecolor='none')
-    plt.savefig(
-        '/Users/fcagnin/Desktop/debug/{0}.jpg'.format(out_file_name))
-    # plt.show()
-    # exit()
-    # plt.close(fig)
-    # fig = plt.figure()
-    # ax = plt.subplot(111)
-    # ind = numpy.arange(len(descriptor))
-    # ax.bar(ind, descriptor, width=1, color=col)
-    # plt.savefig('/Users/fcagnin/Desktop/debug/{0}.png'.format(out_file_name))
-    # plt.close(fig)
-
-def draw_keypoints(image_file_path, image_keypoints, out_file_name):
-    file_image = cv2.imread(image_file_path)
-    image_keypoints = [keypoint for keypoint in image_keypoints if keypoint != []]
-    for keypoint in image_keypoints:
-        pt = (int(keypoint[0]), int(keypoint[1]))
-        cv2.circle(file_image, pt, radius=10, color=(0, 0, 255), thickness=-1)
-    cv2.imwrite('/Users/fcagnin/Desktop/debug/{0}.png'.format(out_file_name), file_image)
-### debug ###
-
 
 # def geometric_check(match, keypoint_to_add, query_keypoints, query_points_index, squared_tolerance_pixel=30):
 # todo: for keypoint in itertools.ifilter(lambda x: x != [], match['keypoints']):
@@ -67,7 +34,6 @@ def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tole
             if (abs(numpy.linalg.norm(a - b)) - abs(numpy.linalg.norm(c - d))) > tolerancesq:
                 return False
     return True
-
 
 # todo: debug
 def compute_match_err(query_keypoints, match):
@@ -121,12 +87,6 @@ assert len(query_keypoints) == len(query_descriptors)
 
 print '   Keypoints detected: {0}'.format(len(query_keypoints))
 
-### debug ###
-i = query_image.copy()
-i = cv2.drawKeypoints(query_image, query_keypoints, i)
-cv2.imwrite('/Users/fcagnin/Desktop/debug/query.png', i)
-### debug ###
-
 
 # load the codebook
 print 'Loading the codebook...'
@@ -149,88 +109,48 @@ for i, query_descriptor in enumerate(query_descriptors):
     }
     query_points.append(query_point)
 
+
 # find matches in each page
 print 'Finding matches in each page...'
-pages = codebook['codewords'][0]['keypoints'].keys()  # todo: rework
-corpus_matches_scored = dict()
-for page in pages:
-    # extract codewords keypoints on the current page
-    # index_set = list()
-    # for query_point in query_points:
-    #     codeword = query_point['w']
-    #     index_set.append({
-    #         'page_keypoints': codeword['keypoints'][page],
-    #         'page_descriptors': codeword['descriptors'][page]
-    #     })
-
+matches = dict()
+for page in codebook['pages']:
     # find matches on current page
     match = []
-    matches = [match]  # start with empty match
+    page_matches = [match]  # start with empty match
 
     query_keypoints_remaining = len(query_keypoints)
     for i, query_point in enumerate(query_points):
         curr_codeword = query_point['w']
         curr_codeword_keypoints = curr_codeword['keypoints'][page]
-        ### debug ###
-        # print '   len codeword_keypoints: {0}'.format(len(curr_codeword_keypoints))
-        ### debug ###
 
-        new_matches = []
-        for match in matches:
+        # (try to) expand current matches
+        new_page_matches = []
+        for match in page_matches:
             found_better_match = False
-            ### debug ###
-            better_match_count = 0
-            ### debug ###
 
             for j, keypoint in enumerate(curr_codeword_keypoints):
                 if geometric_check(match, keypoint, query_keypoints, i):
-                    # add the better match to the new matches
+                    # add the better match to new matches
                     new_match = match + [keypoint]
-                    new_matches.append(new_match)
+                    new_page_matches.append(new_match)
                     found_better_match = True
-
-                    ### debug ###
-                    # draw_keypoints('/Users/fcagnin/Desktop/pages/{0}'.format(page_file_name),
-                    #                new_match['keypoints'],
-                    #                'new_match-{0}-{1}'.format(i, better_match_count))
-                    better_match_count += 1
-                    ### debug ###
 
             if not found_better_match:
                 match_len = sum([1 for keypoint in match if keypoint])
                 if match_len + query_keypoints_remaining >= len(query_keypoints) * rho:
                     # keep the old match going
                     new_match = match + [None]
-                    new_matches.append(new_match)
+                    new_page_matches.append(new_match)
 
         query_keypoints_remaining -= 1
-        matches = new_matches
+        page_matches = new_page_matches
 
-        ### debug ###
-        # print '   len matches: {0}'.format(len(matches))
-        # draw current query keypoint on query
-        # if i == 10:
-        #     query_image = cv2.imread(query_file_path)
-        #     pt = (int(query_keypoints[i][0]), int(query_keypoints[i][1]))
-        #     cv2.circle(query_image, pt, radius=3, color=(0, 0, 255), thickness=1)
-        #     cv2.imwrite('/Users/fcagnin/Desktop/debug/query-{0}.png'.format(i), query_image)
-
-        #     # draw codeword_keypoints on page
-        #     draw_keypoints(
-        #         '{0}/{1}'.format(pages_directory_path, page_file_name), codeword_keypoints, i)
-
-        # print '   {0}/{1}'.format(i + 1, len(index_set))
-        ### debug ###
-
-    print '   Found {0} matches in page {1}'.format(len(matches), page)
-    if (len(matches) > 0):
-        matches_scored = [
-            (page_match, compute_match_err(query_keypoints, page_match)) for page_match in matches]
-
-        # top_k_matches = sorted(matches_scores, key=lambda x: x[1])
-        # extract_and_save_matches(page, [p[0] for p in top_k_matches])
-        corpus_matches_scored[page] = matches_scored
+    print '   Found {0} matches in page {1}'.format(len(page_matches), page)
+    if (len(page_matches) > 0):
+        page_matches_scored = [
+            (match, compute_match_err(query_keypoints, match)) for match in page_matches]
+        matches[page] = page_matches_scored
 
 
 # save matches to file
-utils.save_matches(corpus_matches_scored, 'matches.json')
+utils.save_matches(matches, 'matches.json')
