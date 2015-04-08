@@ -51,6 +51,7 @@ codebook = {
     'codebook_size': codebook_size,
     'max_iter': max_iter,
     'epsilon': epsilon,
+    'pages': corpus['pages'],
     'codewords': list()
 }
 
@@ -59,8 +60,8 @@ for group in range(len(d)):
     codeword_centroid = d[group]
 
     # find keypoints that belong to the current group, and group them in pages
-    codeword_keypoints = dict.fromkeys(corpus['pages'], list())
-    codeword_descriptors = dict.fromkeys(corpus['pages'], list())
+    codeword_keypoints = dict.fromkeys(codebook['pages'], list())
+    codeword_descriptors = dict.fromkeys(codebook['pages'], list())
 
     curr_page_start_index = curr_page_last_index = 0
     for i, page in enumerate(corpus['pages']):
