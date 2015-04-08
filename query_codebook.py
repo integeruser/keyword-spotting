@@ -149,10 +149,10 @@ for i, query_descriptor in enumerate(query_descriptors):
     }
     query_points.append(query_point)
 
-# find and extract matches in each page
-print 'Finding and extracting matches in each page...'
+# find matches in each page
+print 'Finding matches in each page...'
 pages = codebook['codewords'][0]['keypoints'].keys()  # todo: rework
-corpus_matches = dict()
+corpus_matches_scored = dict()
 for page in pages:
     # extract codewords keypoints on the current page
     # index_set = list()
@@ -172,7 +172,7 @@ for page in pages:
         curr_codeword = query_point['w']
         curr_codeword_keypoints = curr_codeword['keypoints'][page]
         ### debug ###
-        print '   len codeword_keypoints: {0}'.format(len(curr_codeword_keypoints))
+        # print '   len codeword_keypoints: {0}'.format(len(curr_codeword_keypoints))
         ### debug ###
 
         new_matches = []
@@ -229,6 +229,8 @@ for page in pages:
 
         # top_k_matches = sorted(matches_scores, key=lambda x: x[1])
         # extract_and_save_matches(page, [p[0] for p in top_k_matches])
-        corpus_matches[page] = matches_scored
+        corpus_matches_scored[page] = matches_scored
 
-utils.save_matches(corpus_matches, 'matches.json')
+
+# save matches to file
+utils.save_matches(corpus_matches_scored, 'matches.json')

@@ -14,24 +14,10 @@ def cv2_to_namedtuple_keypoints(keypoints):
     return[KeyPoint(keypoint.pt, keypoint.angle, keypoint.size, keypoint.response) for keypoint in keypoints]
 
 def tuple_to_namedtuple_keypoints(keypoints):
+    return[KeyPoint._make(keypoint) for keypoint in keypoints]
+
+def matches_to_namedtuple_keypoints(keypoints):
     return[None if not keypoint else KeyPoint._make(keypoint) for keypoint in keypoints]
-
-def matches_to_namedtuple_keypoints(match_scored):
-    # print type(keypoints)
-    # print type(keypoints[0])
-    # print 'asdf' + str(keypoints[0])
-    # print type(keypoints[1])
-    # print keypoints[1]
-
-    # print 'me'
-    # print keypoints[1][1]
-    # print keypoints[1][0]
-    # print keypoints[1][1]
-    # print keypoints[1][2]
-    # print keypoints[1][3]
-    match = match_scored
-    return[KeyPoint(keypoint[0], keypoint[1], keypoint[2], keypoint[3]) if keypoint else None
-           for match, score in match_scored for keypoint in match]
 
 ################################################################################
 
@@ -66,14 +52,6 @@ def load_codebook(codebook_file_path):
 
 
 def save_matches(matches, matches_file_path):
-    # for page in matches:
-    #     n = list()
-    #     for match, score in matches[page]:
-    #         l = [keypoint for keypoint in match if keypoint]
-    #         # n.append(serialize_keypoints(l))
-    #         n.append(l)
-    #     matches[page] = n
-
     with open(matches_file_path, 'w') as f:
         json.dump(matches, f, indent=4)
 
@@ -85,8 +63,7 @@ def load_matches(matches_file_path):
         for i, match_scored in enumerate(matches[page]):
             match = match_scored[0]
             score = match_scored[1]
-            # matches[page][i] = (tuple_to_namedtuple_keypoints(match), score)
-            matches[page][i] = tuple_to_namedtuple_keypoints(match)
+            matches[page][i] = (matches_to_namedtuple_keypoints(match), score)
     return matches
 
 ################################################################################

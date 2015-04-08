@@ -16,10 +16,20 @@ print '   {0: <20} = {1}'.format('matches_file_path', matches_file_path)
 
 ################################################################################
 
+# load matches
+print 'Loading matches...'
 matches = utils.load_matches(matches_file_path)
 
+# extract top-k matches
+k = 10
+print 'Extracting top-{0} matches in each page...'.format(k)
 for page, page_matches in matches.viewitems():
-    for i, match in enumerate(page_matches):
+    top_k_page_matches = sorted(page_matches, key=lambda x: x[1])[:k]
+    assert len(top_k_page_matches) <= k
+
+    for i, match_scored in enumerate(top_k_page_matches):
+        match = match_scored[0]
+
         pages_directory_path = 'data sets/typesetted/'
         page_image = cv2.imread('{0}/{1}'.format(pages_directory_path, page))
 
