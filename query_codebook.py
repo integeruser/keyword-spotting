@@ -18,7 +18,7 @@ import utils
 #                 return False
 #     return True
 
-def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tolerance=40, tolerancesq=20):
+def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tolerance=20, tolerancesq=5):
     # todo
     c1 = keypoint_to_add.angle < (query_keypoints[i_q_new].angle - angle_tolerance / 2.0) % 360
     c2 = keypoint_to_add.angle > (query_keypoints[i_q_new].angle + angle_tolerance / 2.0) % 360
@@ -108,6 +108,10 @@ for i, query_descriptor in enumerate(query_descriptors):
         'x': query_keypoints[i]
     }
     query_points.append(query_point)
+
+### debug ###
+utils.save_debug(codebook, query_points)
+### debug ###
 
 
 # find matches in each page
