@@ -136,6 +136,21 @@ def pmt():
 
 ################################################################################
 
+def save_debug(codebook, query_points):
+    debug = dict()
+    for page in codebook['pages']:
+        debug[page] = list()
+        for query_point in query_points:
+            curr_codeword = query_point['w']
+            curr_codeword_keypoints = curr_codeword['keypoints'][page]
+            query_keypoint = cv2_to_namedtuple_keypoints([query_point['x']])[0]
+            debug[page].append((query_keypoint, curr_codeword_keypoints))
+
+    with open('debug.json', 'w') as f:
+        json.dump(debug, f, indent=4)
+
+################################################################################
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         sys.exit('Usage: {0} mode'.format(sys.argv[0]))
