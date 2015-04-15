@@ -76,7 +76,7 @@ print '   {0: <18} = {1}'.format('rho', rho)
 
 # load the query as grey scale, detect its keypoints and compute its descriptors
 print 'Detecting keypoints and computing descriptors on \'{0}\'...'.format(query_file_path)
-sift = cv2.xfeatures2d.SIFT_create(nfeatures=n_features, nOctaveLayers=1)
+sift = cv2.SIFT(nfeatures=n_features, nOctaveLayers=1)
 
 query_image = cv2.imread(query_file_path)
 query_image = cv2.cvtColor(query_image, cv2.COLOR_BGR2GRAY)

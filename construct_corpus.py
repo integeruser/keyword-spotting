@@ -29,7 +29,7 @@ corpus = {
     'descriptors': list()
 }
 
-sift = cv2.xfeatures2d.SIFT_create(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
+sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
 
 for page_file_name in os.listdir(pages_directory_path):
     print('   Detecting keypoints and computing descriptors on \'{0}\'...'.format(page_file_name))

@@ -36,7 +36,7 @@ corpus_descriptors_vstack = numpy.vstack(corpus['descriptors'])
 
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
 attempts = 10
-compactness, labels, d = cv2.kmeans(corpus_descriptors_vstack, codebook_size, None,
+compactness, labels, d = cv2.kmeans(corpus_descriptors_vstack, codebook_size,
                                     criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)
 assert len(d) == codebook_size
 

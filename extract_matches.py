@@ -22,7 +22,7 @@ print 'Loading matches...'
 matches = utils.load_matches(matches_file_path)
 
 # extract top-k matches
-k = 10
+k = 20
 print 'Extracting top-{0} matches in each page...'.format(k)
 for page, page_matches in matches.viewitems():
     top_k_page_matches = sorted(page_matches, key=lambda x: x[1])[:k]
@@ -39,7 +39,6 @@ for page, page_matches in matches.viewitems():
         # draw keypoints on original image
         page_image = cv2.drawKeypoints(page_image, match_keypoints, None,
                                        flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-
         # draw box around match
         offset_pixel = 25
         x_min = float('inf')
@@ -62,6 +61,6 @@ for page, page_matches in matches.viewitems():
         y_min += - offset_pixel
         x_max += + offset_pixel
         y_max += + offset_pixel
-        page_image = cv2.rectangle(page_image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+        cv2.rectangle(page_image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
 
     cv2.imwrite('{0}/{1}.png'.format(output_directory_path, page), page_image)
