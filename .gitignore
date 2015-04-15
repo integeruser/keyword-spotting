@@ -1,11 +1,7 @@
 keyword-spotting.*
-.idea/*
 boxes/*
-codebooks/*
-corpuses/*
 data sets/*
 documents/*
-matches/*
-pages*/*
+output/*
 queries/*
 *.pyc
