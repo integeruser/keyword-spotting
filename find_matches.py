@@ -6,6 +6,24 @@ import sys
 import utils
 
 
+def prune_near_keypoints(keypoints, descriptors, pixel_threshold=1):
+    pruned_keypoints = list()
+    pruned_descriptors = list()
+    for i, keypoint1 in enumerate(keypoints):
+        to_prune = False
+        for keypoint2 in keypoints[i+1:]:
+            dist = abs(numpy.linalg.norm(
+                numpy.asarray(keypoint1.pt) - numpy.asarray(keypoint2.pt)))
+            if dist <= pixel_threshold:
+                to_prune = True
+                break
+        if not to_prune:
+            pruned_keypoints.append(keypoint1)
+            pruned_descriptors.append(descriptors[i])
+
+    return pruned_keypoints, pruned_descriptors
+
+
 # def geometric_check(match, keypoint_to_add, query_keypoints, query_points_index, squared_tolerance_pixel=30):
 # todo: for keypoint in itertools.ifilter(lambda x: x != [], match['keypoints']):
 #     for i, match_keypoint in enumerate(match['keypoints']):
@@ -84,8 +102,11 @@ query_image = cv2.cvtColor(query_image, cv2.COLOR_BGR2GRAY)
 query_keypoints, query_descriptors = sift.detectAndCompute(query_image, None)
 assert len(query_keypoints) > 0
 assert len(query_keypoints) == len(query_descriptors)
-
 print '   Keypoints detected: {0}'.format(len(query_keypoints))
+
+# prune near keypoints
+query_keypoints, query_descriptors = prune_near_keypoints(query_keypoints, query_descriptors)
+print '   Keypoints after pruning: {0}'.format(len(query_keypoints))
 
 
 # load the codebook
