@@ -107,6 +107,8 @@ print '   Keypoints detected: {0}'.format(len(query_keypoints))
 # prune near keypoints
 query_keypoints, query_descriptors = prune_near_keypoints(query_keypoints, query_descriptors)
 print '   Keypoints after pruning: {0}'.format(len(query_keypoints))
+print '   A match must contain at least {n} keypoints (since rho={rho})'.format(n=int(len(query_keypoints)*rho),
+                                                                                rho=rho)
 
 
 # load the codebook
@@ -163,7 +165,7 @@ for page in codebook['pages']:
             if not found_better_match:
                 # check if there are not enough keypoints remaining to mantain the threshold
                 match_len = sum([1 for keypoint in match if keypoint])
-                if match_len + query_keypoints_remaining-1 >= len(query_keypoints) * rho:
+                if match_len + query_keypoints_remaining-1 >= rho*len(query_keypoints):
                     # ok, enough keypoints remaining, keep the old match going
                     new_match = match + [None]
                     new_page_matches.append(new_match)
@@ -171,6 +173,7 @@ for page in codebook['pages']:
         query_keypoints_remaining -= 1
         page_matches = new_page_matches
 
+    assert all(len(match) >= rho*len(query_keypoints) for match in page_matches)
     print '   Found {0} matches in page {1}'.format(len(page_matches), page)
     if (len(page_matches) > 0):
         page_matches_scored = [
