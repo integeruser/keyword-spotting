@@ -161,9 +161,10 @@ for page in codebook['pages']:
                     found_better_match = True
 
             if not found_better_match:
+                # check if there are not enough keypoints remaining to mantain the threshold
                 match_len = sum([1 for keypoint in match if keypoint])
-                if match_len + query_keypoints_remaining >= len(query_keypoints) * rho:
-                    # keep the old match going
+                if match_len + query_keypoints_remaining-1 >= len(query_keypoints) * rho:
+                    # ok, enough keypoints remaining, keep the old match going
                     new_match = match + [None]
                     new_page_matches.append(new_match)
 
