@@ -85,8 +85,8 @@ def run(args, output_directory_path="", force=False):
     rho = float(args["rho"])
 
     print("Finding matches...")
-    print("   {:<18} = {}".format("codebook_file_path", codebook_file_path))
-    print("   {:<18} = {}".format("query_file_path", query_file_path))
+    print("   {:<18} = \"{}\"".format("codebook_file_path", codebook_file_path))
+    print("   {:<18} = \"{}\"".format("query_file_path", query_file_path))
     print("   {:<18} = {}".format("n_features", n_features))
     print("   {:<18} = {}".format("rho", rho))
 
