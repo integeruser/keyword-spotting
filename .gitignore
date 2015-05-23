@@ -1,7 +1,6 @@
-keyword-spotting.*
-boxes/*
 data sets/*
-documents/*
 output/*
 queries/*
+keyword-spotting.*
 *.pyc
+*.json
