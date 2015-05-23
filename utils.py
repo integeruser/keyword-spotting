@@ -1,11 +1,12 @@
-#!/usr/bin/env python2 -u
+#!/usr/bin/env python2
 import collections
 import cPickle
-import cv2
 import json
+import os
 import re
 import sys
-import utils
+
+import cv2
 
 
 KeyPoint = collections.namedtuple('KeyPoint', 'pt size angle response octave')
@@ -95,6 +96,30 @@ def pcr():
     print '   {0: <20} = {1}'.format('keypoints per page', [len(page_keypoints) for page_keypoints in corpus['keypoints']])
     print '   {0: <20} = {1}'.format('descriptors per page', [len(page_descriptors) for page_descriptors in corpus['descriptors']])
 
+def dcr():
+    if len(sys.argv) != 4:
+        sys.exit('Usage: {0} dcr corpus_file_path page_file_path'.format(sys.argv[0]))
+
+    corpus_file_path = sys.argv[2]
+    page_file_path = sys.argv[3]
+    print 'Starting dcr...'
+    print '   {0: <16} = {1}'.format('corpus_file_path', corpus_file_path)
+    print '   {0: <16} = {1}'.format('page_file_path', page_file_path)
+
+    ########################################################################
+
+    page_image = cv2.imread(page_file_path)
+
+    corpus = load_corpus(corpus_file_path)
+    page = os.path.basename(page_file_path)
+    i = corpus['pages'].index(page)
+    page_keypoints = namedtuple_keypoints_to_cv2(corpus['keypoints'][i])
+
+    cv2.imshow('page', cv2.drawKeypoints(page_image, page_keypoints, None,
+                                         flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS))
+    cv2.waitKey()
+
+
 def pcd():
     if len(sys.argv) != 3:
         sys.exit('Usage: {0} pcd codebook_file_path'.format(sys.argv[0]))
@@ -133,6 +158,57 @@ def pmt():
 
     print '   {0: <18} = {1}'.format('codebook_file_path', codebook_file_path)
     print '   {0: <18} = {1}'.format('pages', matches.keys())
+
+def codeword_vs_query():
+    if len(sys.argv) != 4:
+        sys.exit('Usage: {0} codeword_vs_query pages_directory_path query_file_path'.format(
+            sys.argv[0]))
+
+    pages_directory_path = sys.argv[2]
+    query_file_path = sys.argv[3]
+    print 'Starting script...'
+    print '   {0: <19} = {1}'.format('pages_directory_path', pages_directory_path)
+    print '   {0: <19} = {1}'.format('query_file_path', query_file_path)
+
+    ########################################################################
+
+    with open('debug.json') as f:
+        debug = json.load(f)
+
+    query_image = cv2.imread(query_file_path)
+
+    page_index = 0
+    query_keypoint_index = 0
+    while True:
+        page = debug.keys()[page_index]
+
+        query_keypoint = debug[page][query_keypoint_index][0]
+        codeword_keypoints = debug[page][query_keypoint_index][1]
+
+        page_image = cv2.imread('{0}/{1}'.format(pages_directory_path, page))
+
+        cv2.imshow('codeword-keypoints{0}-{1}'.format(page_index, query_keypoint_index),
+                   cv2.drawKeypoints(page_image, utils.namedtuple_keypoints_to_cv2(codeword_keypoints),
+                                     None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS))
+        cv2.moveWindow('codeword-keypoints{0}-{1}'.format(page_index, query_keypoint_index), 200, 200)
+
+        cv2.imshow('query-keypoints{0}-{1}'.format(page_index, query_keypoint_index),
+                   cv2.drawKeypoints(query_image, utils.namedtuple_keypoints_to_cv2([query_keypoint]),
+                                     None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS))
+        cv2.moveWindow('query-keypoints{0}-{1}'.format(page_index, query_keypoint_index), 200, 400)
+        k = cv2.waitKey()
+        cv2.destroyAllWindows()
+
+        if k == ord('j'):
+            query_keypoint_index -= 1
+            if query_keypoint_index == -1:
+                query_keypoint_index = len(debug[page])-1
+                page_index = (page_index-1) % len(debug.keys())
+        elif k == ord('l'):
+            query_keypoint_index += 1
+            if query_keypoint_index == len(debug[page]):
+                query_keypoint_index = 0
+                page_index = (page_index+1) % len(debug.keys())
 
 ################################################################################
 
