@@ -61,3 +61,13 @@ def run(args, output_directory_path="", force=False):
             cv2.rectangle(page_image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
 
         cv2.imwrite("{0}/{1}.png".format(output_directory_path, page), page_image)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="")
+    parser.add_argument("-o", default="")
+    parser.add_argument("-f", action="store_true", default=False)
+    parser.add_argument("pages_directory_path")
+    parser.add_argument("matches_file_path")
+    args = parser.parse_args()
+    run(vars(args), output_directory_path=args.o, force=args.f)
