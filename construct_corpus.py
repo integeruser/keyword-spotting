@@ -25,37 +25,37 @@ def run(args, output_directory_path="", force=False):
     corpus_file_path = os.path.join(output_directory_path, corpus_file_name)
     if not force and os.path.isfile(corpus_file_path):
         print("Corpus already exists and therefore construction is skipped. Use -f to reconstruct it.")
-        return corpus_file_path
+    else:
+        # construct corpus
+        # load each page as grey scale, detect its keypoints and compute its descriptors
+        print("Loading pages...")
+        corpus = {
+            "pages_directory_path": pages_directory_path,
+            "contrast_threshold": contrast_threshold,
+            "n_octave_layers": n_octave_layers,
+            "pages": list(),
+            "keypoints": list(),
+            "descriptors": list()
+        }
 
-    # load each page as grey scale, detect its keypoints and compute its descriptors
-    print("Loading pages...")
-    corpus = {
-        "pages_directory_path": pages_directory_path,
-        "contrast_threshold": contrast_threshold,
-        "n_octave_layers": n_octave_layers,
-        "pages": list(),
-        "keypoints": list(),
-        "descriptors": list()
-    }
+        sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
 
-    sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
+        for page_file_name in os.listdir(pages_directory_path):
+            print("   Detecting keypoints and computing descriptors on \"{}\"...".format(page_file_name))
+            page_image = cv2.imread(os.path.join(pages_directory_path, page_file_name))
+            page_image = cv2.cvtColor(page_image, cv2.COLOR_BGR2GRAY)
 
-    for page_file_name in os.listdir(pages_directory_path):
-        print("   Detecting keypoints and computing descriptors on \"{}\"...".format(page_file_name))
-        page_image = cv2.imread(os.path.join(pages_directory_path, page_file_name))
-        page_image = cv2.cvtColor(page_image, cv2.COLOR_BGR2GRAY)
+            page_keypoints, page_descriptors = sift.detectAndCompute(page_image, None)
+            assert len(page_keypoints) > 0
+            assert len(page_keypoints) == len(page_descriptors)
 
-        page_keypoints, page_descriptors = sift.detectAndCompute(page_image, None)
-        assert len(page_keypoints) > 0
-        assert len(page_keypoints) == len(page_descriptors)
+            corpus["pages"].append(page_file_name)
+            corpus["keypoints"].append(page_keypoints)
+            corpus["descriptors"].append(page_descriptors)
 
-        corpus["pages"].append(page_file_name)
-        corpus["keypoints"].append(page_keypoints)
-        corpus["descriptors"].append(page_descriptors)
-
-    # save pages, keypoints and descriptors to file
-    print("Saving {}...".format(corpus_file_path))
-    utils.save_corpus(corpus, corpus_file_path)  # corpus is modified after this operation
+        # save pages, keypoints and descriptors to file
+        print("Saving {}...".format(corpus_file_path))
+        utils.save_corpus(corpus, corpus_file_path)  # corpus is modified after this operation
     return corpus_file_path
 
 
