@@ -7,13 +7,12 @@ import construct_codebook
 import find_matches
 import extract_matches
 
+
 parser = argparse.ArgumentParser(description="")
 parser.add_argument("-o", default="", help="")
 parser.add_argument("-f", action="store_true", default=False, help="")
 parser.add_argument("config_file_path", help="")
 args = parser.parse_args()
-
-################################################################################
 
 # load config file
 with open(args.config_file_path) as f:

@@ -8,6 +8,7 @@ import os
 import cv2
 import utils
 
+
 def prune_near_keypoints(keypoints, descriptors, pixel_threshold=1):
     pruned_keypoints = list()
     pruned_descriptors = list()

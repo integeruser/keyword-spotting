@@ -6,6 +6,7 @@ import os
 import cv2
 import utils
 
+
 def run(args, output_directory_path="", force=False):
     pages_directory_path = args["pages_directory_path"]
     contrast_threshold = float(args["contrast_threshold"])

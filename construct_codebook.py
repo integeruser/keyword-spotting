@@ -8,6 +8,7 @@ import os
 import cv2
 import utils
 
+
 def run(args, output_directory_path="", force=False):
     corpus_file_path = args["corpus_file_path"]
     codebook_size = int(args["codebook_size"])
