@@ -1,0 +1,53 @@
+# keyword-spotting
+This repository contains my work on keyword spotting using game theory.
+
+
+## Installation
+On OS X, simply use `brew install opencv3 --with-contrib --with-python3` to install OpenCV, then `echo /usr/local/opt/opencv3/lib/python3.4/site-packages >> /usr/local/lib/python3.4/site-packages/opencv3.pth` to set up correctly the Python path.
+
+
+## Examples
+```
+rm -r output
+mkdir output
+./construct_corpus.py data\ sets/typesetted 0.04 1 && mv corpus-2-0.04-1 output
+./construct_codebook.py output/corpus-2-0.04-1 256 10 1.0 && mv codebook-2-0.04-1--256-10-1.0 output
+./find_matches.py output/codebook-2-0.04-1--256-10-1.0 queries/et.png 20 0.9 && mv matches.json output && ./extract_matches.py data\ sets/typesetted output/matches.json output
+```
+
+```
+rm -r output
+mkdir output
+./construct_corpus.py data\ sets/pages3 0.1 1 && mv corpus-3-0.1-1 output
+./construct_codebook.py output/corpus-3-0.1-1 256 10 1.0 && mv codebook-3-0.1-1--256-10-1.0 output
+./find_matches.py output/codebook-3-0.1-1--256-10-1.0 queries/october-2700270.tif 20 0.6 && mv matches.json output && ./extract_matches.py data\ sets/pages3 output/matches.json output
+```
+
+```
+tests/draw_keypoints_i1.py queries/october-2700270.tif 0.04 1
+tests/draw_keypoints_i1_i2.py queries/october-2700270.tif queries/october-2730273.tif 0.04 1
+```
+
+
+## License
+The MIT License (MIT)
+
+Copyright (c) 2015 Francesco Cagnin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
