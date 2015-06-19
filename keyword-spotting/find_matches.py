@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import argparse
 import hashlib
 import itertools
@@ -96,6 +96,7 @@ def run(args, output_directory_path="", force=False):
     fingerprint += os.path.basename(query_file_path)
     fingerprint += str(n_features)
     fingerprint += str(rho)
+    fingerprint = fingerprint.encode("utf-8")
 
     matches_file_name = "matches-{}.json".format(hashlib.sha256(fingerprint).hexdigest()[:7])
     matches_file_path = os.path.join(output_directory_path, matches_file_name)
@@ -104,8 +105,8 @@ def run(args, output_directory_path="", force=False):
     else:
         # find matches
         # load the query as grey scale, detect its keypoints and compute its descriptors
-        print "Detecting keypoints and computing descriptors on \"{0}\"...".format(query_file_path)
-        sift = cv2.SIFT(nfeatures=n_features, nOctaveLayers=1)
+        print("Detecting keypoints and computing descriptors on \"{0}\"...".format(query_file_path))
+        sift = cv2.xfeatures2d.SIFT_create(nfeatures=n_features, nOctaveLayers=1)
 
         query_image = cv2.imread(query_file_path)
         query_image = cv2.cvtColor(query_image, cv2.COLOR_BGR2GRAY)
@@ -113,21 +114,21 @@ def run(args, output_directory_path="", force=False):
         query_keypoints, query_descriptors = sift.detectAndCompute(query_image, None)
         assert len(query_keypoints) > 0
         assert len(query_keypoints) == len(query_descriptors)
-        print "   Keypoints detected: {0}".format(len(query_keypoints))
+        print("   Keypoints detected: {0}".format(len(query_keypoints)))
 
         # prune near keypoints
         query_keypoints, query_descriptors = prune_near_keypoints(query_keypoints, query_descriptors)
-        print "   Keypoints after pruning: {0}".format(len(query_keypoints))
-        print "   A match must contain at least {n} keypoints (since rho={rho})".format(n=int(len(query_keypoints)*rho), rho=rho)
+        print("   Keypoints after pruning: {0}".format(len(query_keypoints)))
+        print("   A match must contain at least {n} keypoints (since rho={rho})".format(n=int(len(query_keypoints)*rho), rho=rho))
 
         # load the codebook
-        print "Loading the codebook..."
+        print("Loading the codebook...")
         codebook = utils.load_codebook(codebook_file_path)
-        print "   Codebook keypoints count: {0}".format(sum([len(v) for codeword in codebook["codewords"]
-                                                             for v in codeword["keypoints"].viewvalues()]))
+        print("   Codebook keypoints count: {0}".format(sum([len(v) for codeword in codebook["codewords"]
+                                                             for v in codeword["keypoints"].values()])))
 
         # find the nearest codewords to the query descriptors
-        print "Finding the nearest codewords to the query..."
+        print("Finding the nearest codewords to the query...")
         query_points = list()
         for i, query_descriptor in enumerate(query_descriptors):
             # find nearest centroid
@@ -146,7 +147,7 @@ def run(args, output_directory_path="", force=False):
         ### debug ###
 
         # find matches in each page
-        print "Finding matches in each page..."
+        print("Finding matches in each page...")
         matches = dict()
         for page in codebook["pages"]:
             # find matches on current page
@@ -159,7 +160,7 @@ def run(args, output_directory_path="", force=False):
                 curr_codeword = query_point["w"]
                 curr_codeword_keypoints = curr_codeword["keypoints"][page]
                 s += len(curr_codeword_keypoints)
-                print len(curr_codeword_keypoints)
+                print(len(curr_codeword_keypoints))
 
                 # (try to) expand current matches
                 new_page_matches = []
@@ -184,9 +185,9 @@ def run(args, output_directory_path="", force=False):
                 query_keypoints_remaining -= 1
                 page_matches = new_page_matches
 
-            print s
+            print(s)
             assert all(len(match) >= rho*len(query_keypoints) for match in page_matches)
-            print "   Found {0} matches in page {1}".format(len(page_matches), page)
+            print("   Found {0} matches in page {1}".format(len(page_matches), page))
             if (len(page_matches) > 0):
                 page_matches_scored = [
                     (match, compute_match_err(query_keypoints, match)) for match in page_matches]

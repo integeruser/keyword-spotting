@@ -15,13 +15,13 @@ def run(args, output_directory_path="", force=False):
     print("   {:<21} = \"{}\"".format("matches_file_path", matches_file_path))
 
     # load matches
-    print "Loading matches..."
+    print("Loading matches...")
     matches = utils.load_matches(matches_file_path)
 
     # extract top-k matches
     k = 20
-    print "Extracting top-{0} matches in each page...".format(k)
-    for page, page_matches in matches.viewitems():
+    print("Extracting top-{0} matches in each page...".format(k))
+    for page, page_matches in matches.items():
         top_k_page_matches = sorted(page_matches, key=lambda x: x[1])[:k]
         assert len(top_k_page_matches) <= k
 
@@ -34,7 +34,7 @@ def run(args, output_directory_path="", force=False):
             match_keypoints = utils.namedtuple_keypoints_to_cv2(match_keypoints)
 
             # draw keypoints on original image
-            print len(match_keypoints)
+            print(len(match_keypoints))
             page_image = cv2.drawKeypoints(page_image, match_keypoints, None,
                                            flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
             # draw box around match

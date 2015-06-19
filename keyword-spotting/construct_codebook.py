@@ -1,7 +1,6 @@
 #!/usr/bin/env python2
 import argparse
 import hashlib
-import itertools
 import numpy
 import os
 
@@ -26,6 +25,7 @@ def run(args, output_directory_path="", force=False):
     fingerprint += str(codebook_size)
     fingerprint += str(max_iter)
     fingerprint += str(epsilon)
+    fingerprint = fingerprint.encode("utf-8")
 
     codebook_file_name = "codebook-{}".format(hashlib.sha256(fingerprint).hexdigest()[:7])
     codebook_file_path = os.path.join(output_directory_path, codebook_file_name)
@@ -38,7 +38,7 @@ def run(args, output_directory_path="", force=False):
         corpus = utils.load_corpus(corpus_file_path)
         assert len(corpus["pages"]) > 0
         assert len(corpus["pages"]) == len(corpus["keypoints"]) == len(corpus["descriptors"])
-        for page_keypoints, page_descriptors in itertools.izip(corpus["keypoints"], corpus["descriptors"]):
+        for page_keypoints, page_descriptors in zip(corpus["keypoints"], corpus["descriptors"]):
             assert len(page_keypoints) == len(page_descriptors)
 
         # run k-means on the descriptors space
@@ -46,9 +46,8 @@ def run(args, output_directory_path="", force=False):
         corpus_descriptors_vstack = numpy.vstack(corpus["descriptors"])
 
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, max_iter, epsilon)
-        attempts = 10
-        compactness, labels, d = cv2.kmeans(corpus_descriptors_vstack, codebook_size,
-                                            criteria, attempts, cv2.KMEANS_RANDOM_CENTERS)
+        compactness, labels, d = cv2.kmeans(corpus_descriptors_vstack, codebook_size, None,
+                                            criteria, attempts=10, flags=cv2.KMEANS_RANDOM_CENTERS)
         assert len(d) == codebook_size
 
         # construct the codebook of k visual words
@@ -100,9 +99,9 @@ def run(args, output_directory_path="", force=False):
         assert len(codebook["codewords"]) == codebook_size
         assert len(corpus_keypoints_vstack) == len(corpus_descriptors_vstack)
         assert sum([len(v) for codeword in codebook["codewords"]
-                    for v in codeword["keypoints"].viewvalues()]) == len(corpus_keypoints_vstack)
+                    for v in codeword["keypoints"].values()]) == len(corpus_keypoints_vstack)
         assert sum([len(v) for codeword in codebook["codewords"]
-                    for v in codeword["descriptors"].viewvalues()]) == len(corpus_descriptors_vstack)
+                    for v in codeword["descriptors"].values()]) == len(corpus_descriptors_vstack)
 
         # save codebook
         print("Saving {}...".format(codebook_file_path))

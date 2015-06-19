@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import argparse
 import hashlib
 import os
@@ -21,6 +21,7 @@ def run(args, output_directory_path="", force=False):
     fingerprint = "".join([page_file_name for page_file_name in os.listdir(pages_directory_path)])
     fingerprint += str(contrast_threshold)
     fingerprint += str(n_octave_layers)
+    fingerprint = fingerprint.encode("utf-8")
 
     corpus_file_name = "corpus-{}".format(hashlib.sha256(fingerprint).hexdigest()[:7])
     corpus_file_path = os.path.join(output_directory_path, corpus_file_name)
@@ -39,7 +40,7 @@ def run(args, output_directory_path="", force=False):
             "descriptors": list()
         }
 
-        sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
+        sift = cv2.xfeatures2d.SIFT_create(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
 
         for page_file_name in os.listdir(pages_directory_path):
             print("   Detecting keypoints and computing descriptors on \"{}\"...".format(page_file_name))
