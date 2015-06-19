@@ -1,4 +1,4 @@
-# keyword-spotting
+    # keyword-spotting
 This repository contains my work on keyword spotting using game theory.
 
 
@@ -6,26 +6,24 @@ This repository contains my work on keyword spotting using game theory.
 On OS X, simply use `brew install opencv3 --with-contrib --with-python3` to install OpenCV, then `echo /usr/local/opt/opencv3/lib/python3.4/site-packages >> /usr/local/lib/python3.4/site-packages/opencv3.pth` to set up correctly the Python path.
 
 
-## Examples
+## Usage
 ```
-rm -r output
-mkdir output
-./construct_corpus.py data\ sets/typesetted 0.04 1 && mv corpus-2-0.04-1 output
-./construct_codebook.py output/corpus-2-0.04-1 256 10 1.0 && mv codebook-2-0.04-1--256-10-1.0 output
-./find_matches.py output/codebook-2-0.04-1--256-10-1.0 queries/et.png 20 0.9 && mv matches.json output && ./extract_matches.py data\ sets/typesetted output/matches.json output
-```
+keyword-spotting ➤ cat args.json
+{
+    "pages_directory_path": "../data sets/typesetted",
+    "contrast_threshold": "0.04",
+    "n_octave_layers": "1",
 
-```
-rm -r output
-mkdir output
-./construct_corpus.py data\ sets/pages3 0.1 1 && mv corpus-3-0.1-1 output
-./construct_codebook.py output/corpus-3-0.1-1 256 10 1.0 && mv codebook-3-0.1-1--256-10-1.0 output
-./find_matches.py output/codebook-3-0.1-1--256-10-1.0 queries/october-2700270.tif 20 0.6 && mv matches.json output && ./extract_matches.py data\ sets/pages3 output/matches.json output
-```
+    "codebook_size": "256",
+    "max_iter": "10",
+    "epsilon": "1.0",
 
-```
-tests/draw_keypoints_i1.py queries/october-2700270.tif 0.04 1
-tests/draw_keypoints_i1_i2.py queries/october-2700270.tif queries/october-2730273.tif 0.04 1
+    "query_file_path": "../queries/typesetted/et.png",
+    "n_features": "20",
+    "rho": "0.9"
+}
+keyword-spotting ➤ mkdir /tmp/output
+keyword-spotting ➤ python3 -Bu main.py -o /tmp/output args.json
 ```
 
 
