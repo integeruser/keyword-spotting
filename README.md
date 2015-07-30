@@ -1,9 +1,9 @@
-    # keyword-spotting
+# keyword-spotting
 This repository contains my work on keyword spotting using game theory.
 
 
 ## Installation
-On OS X, simply use `brew install opencv3 --with-contrib --with-python3` to install OpenCV, then `echo /usr/local/opt/opencv3/lib/python3.4/site-packages >> /usr/local/lib/python3.4/site-packages/opencv3.pth` to set up correctly the Python path.
+On OS X, simply use `brew install opencv3 --c++11 --with-contrib --with-python3 --with-qt` to install OpenCV, followed by `echo /usr/local/opt/opencv3/lib/python3.4/site-packages >> /usr/local/lib/python3.4/site-packages/opencv3.pth` to set up correctly the Python path.
 
 
 ## Usage
