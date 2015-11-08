@@ -1,5 +1,6 @@
 # keyword-spotting
-This repository contains my work on keyword spotting using game theory.
+This repository contains a few unfinished python scripts for keywords detection on handwritten documents.  
+See `utils.zip` on the Downloads page for more unfinished scripts.
 
 
 ## Installation
