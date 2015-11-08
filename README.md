@@ -1,6 +1,6 @@
 # keyword-spotting
 This repository contains a few unfinished python scripts for keywords detection on handwritten documents.  
-See `utils.zip` on the Downloads page for more unfinished scripts.
+Check the Downloads page for more unfinished scripts and a test data set.
 
 
 ## Installation
