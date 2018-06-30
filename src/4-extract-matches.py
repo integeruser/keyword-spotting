@@ -47,12 +47,11 @@ def run():
                     y_min = y
                 if y > y_max:
                     y_max = y
-
             x_min += -offset_pixel
             y_min += -offset_pixel
             x_max += +offset_pixel
             y_max += +offset_pixel
-            cv2.rectangle(page_image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
+            cv2.rectangle(page_image, (x_min, y_min), (x_max, y_max), (0, 0, 255), 2)
 
         page_image_filepath = f'{output_dirpath}/{page_filename}.png'
         print(f'Saving: {page_image_filepath}')
