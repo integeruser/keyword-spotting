@@ -1,46 +1,39 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import argparse
 import os
+import tempfile
 
 import cv2
 import utils
 
 
-def run(args, output_directory_path="", force=False):
-    pages_directory_path = args["pages_directory_path"]
-    matches_file_path = args["matches_file_path"]
+def run():
+    matches = utils.load_matches(args.matches_filepath)
 
-    print("Extracting matches...")
-    print("   {:<21} = \"{}\"".format("pages_directory_path", pages_directory_path))
-    print("   {:<21} = \"{}\"".format("matches_file_path", matches_file_path))
-
-    # load matches
-    print("Loading matches...")
-    matches = utils.load_matches(matches_file_path)
+    output_dirpath = tempfile.mkdtemp()
 
     # extract top-k matches
     k = 20
-    print("Extracting top-{0} matches in each page...".format(k))
-    for page, page_matches in matches.items():
+    print(f'Extracting top-{k} matches in each page...')
+    for page_filename, page_matches in matches.items():
         top_k_page_matches = sorted(page_matches, key=lambda x: x[1])[:k]
         assert len(top_k_page_matches) <= k
 
-        page_image = cv2.imread("{0}/{1}".format(pages_directory_path, page))
+        page_image = cv2.imread(f'{args.gw_20p_wannot_dirpath}/{page_filename}')
         for i, match_scored in enumerate(top_k_page_matches):
             match = match_scored[0]
 
-            # keep only non-empy keypoints
+            # keep only non-empty keypoints
             match_keypoints = [keypoint for keypoint in match if keypoint]
             match_keypoints = utils.namedtuple_keypoints_to_cv2(match_keypoints)
 
-            # draw keypoints on original image
-            print(len(match_keypoints))
-            page_image = cv2.drawKeypoints(page_image, match_keypoints, None,
-                                           flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-            # draw box around match
+            # draw keypoints on the original page
+            page_image = cv2.drawKeypoints(
+                page_image, match_keypoints, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+            # draw a box around the match
             offset_pixel = 25
-            x_min = float("inf")
-            y_min = float("inf")
+            x_min = float('inf')
+            y_min = float('inf')
             x_max = 0
             y_max = 0
             for keypoint in match_keypoints:
@@ -55,20 +48,20 @@ def run(args, output_directory_path="", force=False):
                 if y > y_max:
                     y_max = y
 
-            x_min += - offset_pixel
-            y_min += - offset_pixel
-            x_max += + offset_pixel
-            y_max += + offset_pixel
+            x_min += -offset_pixel
+            y_min += -offset_pixel
+            x_max += +offset_pixel
+            y_max += +offset_pixel
             cv2.rectangle(page_image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 2)
 
-        cv2.imwrite("{0}/{1}.png".format(output_directory_path, page), page_image)
+        page_image_filepath = f'{output_dirpath}/{page_filename}.png'
+        print(f'Saving: {page_image_filepath}')
+        cv2.imwrite(page_image_filepath, page_image)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="")
-    parser.add_argument("-o", default="")
-    parser.add_argument("-f", action="store_true", default=False)
-    parser.add_argument("pages_directory_path")
-    parser.add_argument("matches_file_path")
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('gw_20p_wannot_dirpath')
+    parser.add_argument('matches_filepath')
     args = parser.parse_args()
-    run(vars(args), output_directory_path=args.o, force=args.f)
+    run()
