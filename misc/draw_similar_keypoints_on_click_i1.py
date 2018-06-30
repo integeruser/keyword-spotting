@@ -1,13 +1,14 @@
-#!/usr/bin/env python2 -Bu
-import cv2
+#!/usr/bin/env python3
 import math
-import numpy
-import PIL
 import random
 import sys
-import Tkinter
+import tkinter
 
+import numpy
+import PIL
 from PIL import Image, ImageTk
+
+import cv2
 
 
 def draw(kp, nearest):
@@ -77,15 +78,7 @@ image_file_path = sys.argv[1]
 contrast_threshold = float(sys.argv[2])
 n_octave_layers = int(sys.argv[3])
 
-print 'Starting script...'
-print '   {0: <18} = {1}'.format('image_file_path', image_file_path)
-print '   {0: <18} = {1}'.format('contrast_threshold', contrast_threshold)
-print '   {0: <18} = {1}'.format('n_octave_layers', n_octave_layers)
-
-################################################################################
-
-# load the image
-sift = cv2.SIFT(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
+sift = cv2.xfeatures2d.SIFT_create(contrastThreshold=contrast_threshold, nOctaveLayers=n_octave_layers)
 
 image_color_original = cv2.imread(image_file_path)
 image = cv2.cvtColor(image_color_original, cv2.COLOR_BGR2GRAY)
@@ -93,25 +86,23 @@ image = cv2.cvtColor(image_color_original, cv2.COLOR_BGR2GRAY)
 image_keypoints, image_descriptors = sift.detectAndCompute(image, None)
 assert len(image_keypoints) > 0
 
-
 # set up the gui
-root = Tkinter.Tk()
+root = tkinter.Tk()
 root.attributes('-fullscreen', True)
 
-frame = Tkinter.Frame(root, bd=2, relief=Tkinter.SUNKEN)
+frame = tkinter.Frame(root, bd=2, relief=tkinter.SUNKEN)
 frame.grid_rowconfigure(0, weight=1)
 frame.grid_columnconfigure(0, weight=1)
-frame.pack(fill=Tkinter.BOTH, expand=True)
+frame.pack(fill=tkinter.BOTH, expand=True)
 
-xscrollbar = Tkinter.Scrollbar(frame, orient=Tkinter.HORIZONTAL)
-xscrollbar.grid(row=1, column=0, sticky=Tkinter.E + Tkinter.W)
+xscrollbar = tkinter.Scrollbar(frame, orient=tkinter.HORIZONTAL)
+xscrollbar.grid(row=1, column=0, sticky=tkinter.E + tkinter.W)
 
-yscrollbar = Tkinter.Scrollbar(frame)
-yscrollbar.grid(row=0, column=1, sticky=Tkinter.N + Tkinter.S)
+yscrollbar = tkinter.Scrollbar(frame)
+yscrollbar.grid(row=0, column=1, sticky=tkinter.N + tkinter.S)
 
-canvas = Tkinter.Canvas(frame, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set,
-                        bd=0, highlightthickness=0)
-canvas.grid(row=0, column=0, sticky=Tkinter.N + Tkinter.S + Tkinter.E + Tkinter.W)
+canvas = tkinter.Canvas(frame, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bd=0, highlightthickness=0)
+canvas.grid(row=0, column=0, sticky=tkinter.N + tkinter.S + tkinter.E + tkinter.W)
 canvas.bind("<Button-1>", canvas_click)
 
 image_color = image_color_original.copy()
@@ -121,6 +112,6 @@ canvas_image = canvas.create_image(0, 0, image=image_color_tk)
 
 xscrollbar.config(command=canvas.xview)
 yscrollbar.config(command=canvas.yview)
-canvas.config(scrollregion=canvas.bbox(Tkinter.ALL))
+canvas.config(scrollregion=canvas.bbox(tkinter.ALL))
 
 root.mainloop()
