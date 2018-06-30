@@ -62,3 +62,5 @@ Saving: /var/folders/5q/0gm82km97cs3p1r4t0br0d940000gn/T/tmpb6ge_hei/3040304.tif
 . . .
 Saving: /var/folders/5q/0gm82km97cs3p1r4t0br0d940000gn/T/tmpb6ge_hei/2700270.tif.png
 ```
+
+<p align="center"><img src="https://user-images.githubusercontent.com/1330900/42128599-711cf1ce-7caf-11e8-9bb3-fd95eb0e1501.png" height="800px"/></p>
