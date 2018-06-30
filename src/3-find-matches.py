@@ -2,8 +2,10 @@
 import argparse
 import hashlib
 import itertools
-import numpy
 import os
+import sys
+
+import numpy
 
 import cv2
 import utils
@@ -14,9 +16,8 @@ def prune_near_keypoints(keypoints, descriptors, pixel_threshold=1):
     pruned_descriptors = list()
     for i, keypoint1 in enumerate(keypoints):
         to_prune = False
-        for keypoint2 in keypoints[i+1:]:
-            dist = abs(numpy.linalg.norm(
-                numpy.asarray(keypoint1.pt) - numpy.asarray(keypoint2.pt)))
+        for keypoint2 in keypoints[i + 1:]:
+            dist = abs(numpy.linalg.norm(numpy.asarray(keypoint1.pt) - numpy.asarray(keypoint2.pt)))
             if dist <= pixel_threshold:
                 to_prune = True
                 break
@@ -26,9 +27,10 @@ def prune_near_keypoints(keypoints, descriptors, pixel_threshold=1):
 
     return pruned_keypoints, pruned_descriptors
 
+
 # def geometric_check(match, keypoint_to_add, query_keypoints, query_points_index, squared_tolerance_pixel=30):
-# todo: for keypoint in itertools.ifilter(lambda x: x != [], match["keypoints"]):
-#     for i, match_keypoint in enumerate(match["keypoints"]):
+# todo: for keypoint in itertools.ifilter(lambda x: x != [], match['keypoints']):
+#     for i, match_keypoint in enumerate(match['keypoints']):
 #         if match_keypoint != []:
 #             query_keypoints_diff = abs(
 #                 numpy.linalg.norm(query_keypoints[i] - query_keypoints[query_points_index]))
@@ -37,6 +39,7 @@ def prune_near_keypoints(keypoints, descriptors, pixel_threshold=1):
 #             if query_keypoints_diff - match_keypoints_diff > squared_tolerance_pixel:
 #                 return False
 #     return True
+
 
 def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tolerance=20, tolerancesq=5):
     # todo
@@ -55,6 +58,7 @@ def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tole
                 return False
     return True
 
+
 # todo: debug
 def compute_match_err(query_keypoints, match):
     match_keypoints = [keypoint for keypoint in match if keypoint]
@@ -66,146 +70,117 @@ def compute_match_err(query_keypoints, match):
         for query_keypoints_pair in itertools.product(query_keypoints, repeat=2):
             a = numpy.asarray(query_keypoints_pair[0].pt)
             b = numpy.asarray(query_keypoints_pair[1].pt)
-            query_keypoints_diff = abs(
-                numpy.linalg.norm(a - b))
+            query_keypoints_diff = abs(numpy.linalg.norm(a - b))
             c = numpy.asarray(match_keypoints_pair[0].pt)
             d = numpy.asarray(match_keypoints_pair[1].pt)
-            match_keypoints_diff = abs(
-                numpy.linalg.norm(c - d))
-            match_err += (query_keypoints_diff - match_keypoints_diff) ** 2
+            match_keypoints_diff = abs(numpy.linalg.norm(c - d))
+            match_err += (query_keypoints_diff - match_keypoints_diff)**2
     match_len = sum([1 for keypoint in match if keypoint])
-    match_err /= (match_len ** 2)
+    match_err /= (match_len**2)
     return match_err
+
 
 ################################################################################
 
-def run(args, output_directory_path="", force=False):
-    codebook_file_path = args["codebook_file_path"]
-    query_file_path = args["query_file_path"]
-    n_features = int(args["n_features"])
-    rho = float(args["rho"])
 
-    print("Finding matches...")
-    print("   {:<18} = \"{}\"".format("codebook_file_path", codebook_file_path))
-    print("   {:<18} = \"{}\"".format("query_file_path", query_file_path))
-    print("   {:<18} = {}".format("n_features", n_features))
-    print("   {:<18} = {}".format("rho", rho))
+def run():
+    matches_fingerprint = os.path.basename(args.codebook_filepath)
+    matches_fingerprint += os.path.basename(args.query_filepath)
+    matches_fingerprint += str(args.n_features)
+    matches_fingerprint += str(args.rho)
+    matches_fingerprint = matches_fingerprint.encode('ascii')
 
-    # compute matches fingerprint, then check if the same matches were already found
-    fingerprint = os.path.basename(codebook_file_path)
-    fingerprint += os.path.basename(query_file_path)
-    fingerprint += str(n_features)
-    fingerprint += str(rho)
-    fingerprint = fingerprint.encode("utf-8")
+    matches_filepath = f'matches-{hashlib.sha256(matches_fingerprint).hexdigest()[:7]}.json'
+    if os.path.isfile(matches_filepath):
+        msg = 'Matches already exist. Overwrite?'
+        overwrite = input('{} (y/N) '.format(msg)).lower() in ('y', 'yes')
+        if not overwrite: sys.exit(1)
 
-    matches_file_name = "matches-{}.json".format(hashlib.sha256(fingerprint).hexdigest()[:7])
-    matches_file_path = os.path.join(output_directory_path, matches_file_name)
-    if not force and os.path.isfile(matches_file_path):
-        print("Matches already exists and therefore construction is skipped. Use -f to reconstruct it.")
-    else:
-        # find matches
-        # load the query as grey scale, detect its keypoints and compute its descriptors
-        print("Detecting keypoints and computing descriptors on \"{0}\"...".format(query_file_path))
-        sift = cv2.xfeatures2d.SIFT_create(nfeatures=n_features, nOctaveLayers=1)
+    sift = cv2.xfeatures2d.SIFT_create(nfeatures=args.n_features, nOctaveLayers=1)
 
-        query_image = cv2.imread(query_file_path)
-        query_image = cv2.cvtColor(query_image, cv2.COLOR_BGR2GRAY)
+    # load the query image as grey scale, detect its keypoints and compute its descriptors
+    query_image = cv2.imread(args.query_filepath)
+    query_image = cv2.cvtColor(query_image, cv2.COLOR_BGR2GRAY)
 
-        query_keypoints, query_descriptors = sift.detectAndCompute(query_image, None)
-        assert len(query_keypoints) > 0
-        assert len(query_keypoints) == len(query_descriptors)
-        print("   Keypoints detected: {0}".format(len(query_keypoints)))
+    query_keypoints, query_descriptors = sift.detectAndCompute(query_image, None)
+    assert len(query_keypoints) > 0
+    assert len(query_keypoints) == len(query_descriptors)
+    print(f'Query keypoints count: {len(query_keypoints)}')
 
-        # prune near keypoints
-        query_keypoints, query_descriptors = prune_near_keypoints(query_keypoints, query_descriptors)
-        print("   Keypoints after pruning: {0}".format(len(query_keypoints)))
-        print("   A match must contain at least {n} keypoints (since rho={rho})".format(n=int(len(query_keypoints)*rho), rho=rho))
+    # prune near keypoints
+    query_keypoints, query_descriptors = prune_near_keypoints(query_keypoints, query_descriptors)
+    print(f'Query keypoints count after pruning: {len(query_keypoints)}')
+    print(f'A match must contain at least {int(len(query_keypoints) * args.rho)} keypoints (since rho={args.rho})')
 
-        # load the codebook
-        print("Loading the codebook...")
-        codebook = utils.load_codebook(codebook_file_path)
-        print("   Codebook keypoints count: {0}".format(sum([len(v) for codeword in codebook["codewords"]
-                                                             for v in codeword["keypoints"].values()])))
+    codebook = utils.load_codebook(args.codebook_filepath)
+    num_codebook_keypoints = sum(len(v) for codeword in codebook['codewords'] for v in codeword['keypoints'].values())
+    print(f'Codebook keypoints count: {num_codebook_keypoints}')
 
-        # find the nearest codewords to the query descriptors
-        print("Finding the nearest codewords to the query...")
-        query_points = list()
-        for i, query_descriptor in enumerate(query_descriptors):
-            # find nearest centroid
-            query_descriptor_distances = [
-                numpy.linalg.norm(query_descriptor - codeword["d"]) for codeword in codebook["codewords"]]
-            nearest_codeword = codebook["codewords"][numpy.argmin(query_descriptor_distances)]
+    # find the nearest codewords to the query descriptors
+    print('Finding nearest codewords...')
+    query_points = list()
+    for i, query_descriptor in enumerate(query_descriptors):
+        # find nearest centroid
+        query_descriptor_distances = [
+            numpy.linalg.norm(query_descriptor - codeword['d']) for codeword in codebook['codewords']
+        ]
+        nearest_codeword = codebook['codewords'][numpy.argmin(query_descriptor_distances)]
 
-            query_point = {
-                "w": nearest_codeword,
-                "x": query_keypoints[i]
-            }
-            query_points.append(query_point)
+        query_point = {'w': nearest_codeword, 'x': query_keypoints[i]}
+        query_points.append(query_point)
 
-        ### debug ###
-        utils.save_debug(codebook, query_points)
-        ### debug ###
+    # find matches in each page
+    print('Finding matches...')
+    matches = dict()
+    for page_filename in codebook['pages']:
+        # find matches on current page, start with the empty match
+        match = []
+        page_matches = [match]
 
-        # find matches in each page
-        print("Finding matches in each page...")
-        matches = dict()
-        for page in codebook["pages"]:
-            # find matches on current page
-            match = []
-            page_matches = [match]  # start with empty match
+        s = 0
+        query_keypoints_remaining = len(query_keypoints)
+        for i, query_point in enumerate(query_points):
+            curr_codeword = query_point['w']
+            curr_codeword_keypoints = curr_codeword['keypoints'][page_filename]
+            s += len(curr_codeword_keypoints)
 
-            s = 0
-            query_keypoints_remaining = len(query_keypoints)
-            for i, query_point in enumerate(query_points):
-                curr_codeword = query_point["w"]
-                curr_codeword_keypoints = curr_codeword["keypoints"][page]
-                s += len(curr_codeword_keypoints)
-                print(len(curr_codeword_keypoints))
+            # try to expand current matches
+            new_page_matches = []
+            for match in page_matches:
+                found_better_match = False
 
-                # (try to) expand current matches
-                new_page_matches = []
-                for match in page_matches:
-                    found_better_match = False
+                for j, keypoint in enumerate(curr_codeword_keypoints):
+                    if geometric_check(match, keypoint, query_keypoints, i):
+                        # add the better match to the new matches
+                        new_match = match + [keypoint]
+                        new_page_matches.append(new_match)
+                        found_better_match = True
 
-                    for j, keypoint in enumerate(curr_codeword_keypoints):
-                        if geometric_check(match, keypoint, query_keypoints, i):
-                            # add the better match to new matches
-                            new_match = match + [keypoint]
-                            new_page_matches.append(new_match)
-                            found_better_match = True
+                if not found_better_match:
+                    # check if there are not enough keypoints remaining to mantain the threshold
+                    match_len = sum([1 for keypoint in match if keypoint])
+                    if match_len + query_keypoints_remaining - 1 >= args.rho * len(query_keypoints):
+                        # ok, enough keypoints remaining, keep the old match going
+                        new_match = match + [None]
+                        new_page_matches.append(new_match)
 
-                    if not found_better_match:
-                        # check if there are not enough keypoints remaining to mantain the threshold
-                        match_len = sum([1 for keypoint in match if keypoint])
-                        if match_len + query_keypoints_remaining-1 >= rho*len(query_keypoints):
-                            # ok, enough keypoints remaining, keep the old match going
-                            new_match = match + [None]
-                            new_page_matches.append(new_match)
+            query_keypoints_remaining -= 1
+            page_matches = new_page_matches
 
-                query_keypoints_remaining -= 1
-                page_matches = new_page_matches
+        assert all(len(match) >= args.rho * len(query_keypoints) for match in page_matches)
+        print(f'{len(page_matches)} matches in page {page_filename}')
+        if (len(page_matches) > 0):
+            page_matches_scored = [(match, compute_match_err(query_keypoints, match)) for match in page_matches]
+            matches[page_filename] = page_matches_scored
 
-            print(s)
-            assert all(len(match) >= rho*len(query_keypoints) for match in page_matches)
-            print("   Found {0} matches in page {1}".format(len(page_matches), page))
-            if (len(page_matches) > 0):
-                page_matches_scored = [
-                    (match, compute_match_err(query_keypoints, match)) for match in page_matches]
-                matches[page] = page_matches_scored
-
-        # save matches
-        print("Saving {}...".format(matches_file_path))
-        utils.save_matches(matches, matches_file_path)
-    return matches_file_path
+    utils.save_matches(matches, matches_filepath)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="")
-    parser.add_argument("-o", default="")
-    parser.add_argument("-f", action="store_true", default=False)
-    parser.add_argument("codebook_file_path")
-    parser.add_argument("query_file_path")
-    parser.add_argument("n_features", type=int)
-    parser.add_argument("rho", type=float)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('codebook_filepath')
+    parser.add_argument('query_filepath')
+    parser.add_argument('n_features', type=int)
+    parser.add_argument('rho', type=float)
     args = parser.parse_args()
-    run(vars(args), output_directory_path=args.o, force=args.f)
+    run()

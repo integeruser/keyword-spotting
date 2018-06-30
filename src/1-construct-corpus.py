@@ -35,6 +35,7 @@ def run():
     sift = cv2.xfeatures2d.SIFT_create(contrastThreshold=args.contrast_threshold, nOctaveLayers=args.n_octave_layers)
 
     for page_filename in pages_filenames:
+        # load the page image as grey scale, detect its keypoints and compute its descriptors
         print(f'Processing: {page_filename}')
         page_image = cv2.imread(os.path.join(args.gw_20p_wannot_dirpath, page_filename))
         page_image = cv2.cvtColor(page_image, cv2.COLOR_BGR2GRAY)
