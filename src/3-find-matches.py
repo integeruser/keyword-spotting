@@ -17,32 +17,16 @@ def prune_near_keypoints(keypoints, descriptors, pixel_threshold=1):
     for i, keypoint1 in enumerate(keypoints):
         to_prune = False
         for keypoint2 in keypoints[i + 1:]:
-            dist = abs(numpy.linalg.norm(numpy.asarray(keypoint1.pt) - numpy.asarray(keypoint2.pt)))
-            if dist <= pixel_threshold:
+            if abs(numpy.linalg.norm(numpy.asarray(keypoint1.pt) - numpy.asarray(keypoint2.pt))) <= pixel_threshold:
                 to_prune = True
                 break
         if not to_prune:
             pruned_keypoints.append(keypoint1)
             pruned_descriptors.append(descriptors[i])
-
     return pruned_keypoints, pruned_descriptors
 
 
-# def geometric_check(match, keypoint_to_add, query_keypoints, query_points_index, squared_tolerance_pixel=30):
-# todo: for keypoint in itertools.ifilter(lambda x: x != [], match['keypoints']):
-#     for i, match_keypoint in enumerate(match['keypoints']):
-#         if match_keypoint != []:
-#             query_keypoints_diff = abs(
-#                 numpy.linalg.norm(query_keypoints[i] - query_keypoints[query_points_index]))
-#             match_keypoints_diff = abs(
-#                 numpy.linalg.norm(match_keypoint - keypoint_to_add))
-#             if query_keypoints_diff - match_keypoints_diff > squared_tolerance_pixel:
-#                 return False
-#     return True
-
-
-def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tolerance=20, tolerancesq=5):
-    # todo
+def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tolerance=30, tolerance=10):
     c1 = keypoint_to_add.angle < (query_keypoints[i_q_new].angle - angle_tolerance / 2.0) % 360
     c2 = keypoint_to_add.angle > (query_keypoints[i_q_new].angle + angle_tolerance / 2.0) % 360
     if c1 or c2:
@@ -54,12 +38,11 @@ def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tole
             b = numpy.asarray(keypoint_to_add.pt)
             c = numpy.asarray(query_keypoints[i].pt)
             d = numpy.asarray(query_keypoints[i_q_new].pt)
-            if (abs(numpy.linalg.norm(a - b)) - abs(numpy.linalg.norm(c - d))) > tolerancesq:
+            if (abs(numpy.linalg.norm(a - b)) - abs(numpy.linalg.norm(c - d))) > tolerance:
                 return False
     return True
 
 
-# todo: debug
 def compute_match_err(query_keypoints, match):
     match_keypoints = [keypoint for keypoint in match if keypoint]
     if len(match_keypoints) == 0:
