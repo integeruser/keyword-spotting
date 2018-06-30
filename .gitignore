@@ -1,4 +1,5 @@
 **/__pycache__/
-**/corpus-*
 **/codebook-*
+**/corpus-*
 **/matches-*
+**/query*
