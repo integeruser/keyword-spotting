@@ -26,7 +26,7 @@ def prune_near_keypoints(keypoints, descriptors, pixel_threshold=1):
     return pruned_keypoints, pruned_descriptors
 
 
-def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tolerance=30, tolerance=10):
+def geometric_check(match, keypoint_to_add, query_keypoints, i_q_new, angle_tolerance=30, tolerance=5):
     c1 = keypoint_to_add.angle < (query_keypoints[i_q_new].angle - angle_tolerance / 2.0) % 360
     c2 = keypoint_to_add.angle > (query_keypoints[i_q_new].angle + angle_tolerance / 2.0) % 360
     if c1 or c2:
@@ -63,10 +63,14 @@ def compute_match_err(query_keypoints, match):
     return match_err
 
 
-################################################################################
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('codebook_filepath')
+    parser.add_argument('query_filepath')
+    parser.add_argument('n_features', type=int)
+    parser.add_argument('rho', type=float)
+    args = parser.parse_args()
 
-
-def run():
     matches_fingerprint = os.path.basename(args.codebook_filepath)
     matches_fingerprint += os.path.basename(args.query_filepath)
     matches_fingerprint += str(args.n_features)
@@ -157,13 +161,3 @@ def run():
             matches[page_filename] = page_matches_scored
 
     utils.save_matches(matches, matches_filepath)
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('codebook_filepath')
-    parser.add_argument('query_filepath')
-    parser.add_argument('n_features', type=int)
-    parser.add_argument('rho', type=float)
-    args = parser.parse_args()
-    run()

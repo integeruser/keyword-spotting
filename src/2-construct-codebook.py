@@ -9,8 +9,14 @@ import numpy
 import cv2
 import utils
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('corpus_filepath')
+    parser.add_argument('codebook_size', type=int)
+    parser.add_argument('max_iter', type=int)
+    parser.add_argument('epsilon', type=float)
+    args = parser.parse_args()
 
-def run():
     codebook_fingerprint = os.path.basename(args.corpus_filepath)
     codebook_fingerprint += str(args.codebook_size)
     codebook_fingerprint += str(args.max_iter)
@@ -52,7 +58,6 @@ def run():
 
     # assign a codeword to each cluster
     for group in range(len(d)):
-        print(f'Group: {group}')
         codeword_centroid = d[group]
 
         # find the keypoints that belong to the current cluster and group them in pages
@@ -87,13 +92,3 @@ def run():
                 for v in codeword['descriptors'].values()]) == len(corpus_descriptors_vstack)
 
     utils.save_codebook(codebook, codebook_filepath)
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('corpus_filepath')
-    parser.add_argument('codebook_size', type=int)
-    parser.add_argument('max_iter', type=int)
-    parser.add_argument('epsilon', type=float)
-    args = parser.parse_args()
-    run()

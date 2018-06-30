@@ -7,8 +7,13 @@ import sys
 import cv2
 import utils
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('gw_20p_wannot_dirpath')
+    parser.add_argument('contrast_threshold', type=float)
+    parser.add_argument('n_octave_layers', type=int)
+    args = parser.parse_args()
 
-def run():
     pages_filenames = [
         page_filename for page_filename in os.listdir(args.gw_20p_wannot_dirpath) if page_filename.endswith('.tif')
     ]
@@ -49,12 +54,3 @@ def run():
         corpus['descriptors'].append(page_descriptors)
 
     utils.save_corpus(corpus, corpus_filepath)
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('gw_20p_wannot_dirpath')
-    parser.add_argument('contrast_threshold', type=float)
-    parser.add_argument('n_octave_layers', type=int)
-    args = parser.parse_args()
-    run()

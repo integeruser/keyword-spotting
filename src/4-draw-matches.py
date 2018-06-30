@@ -6,8 +6,12 @@ import tempfile
 import cv2
 import utils
 
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('gw_20p_wannot_dirpath')
+    parser.add_argument('matches_filepath')
+    args = parser.parse_args()
 
-def run():
     matches = utils.load_matches(args.matches_filepath)
 
     output_dirpath = tempfile.mkdtemp()
@@ -56,11 +60,3 @@ def run():
         page_image_filepath = f'{output_dirpath}/{page_filename}.png'
         print(f'Saving: {page_image_filepath}')
         cv2.imwrite(page_image_filepath, page_image)
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('gw_20p_wannot_dirpath')
-    parser.add_argument('matches_filepath')
-    args = parser.parse_args()
-    run()
